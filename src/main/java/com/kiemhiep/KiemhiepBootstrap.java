@@ -14,8 +14,17 @@ import com.kiemhiep.core.config.DatabaseConfigLoader;
 import com.kiemhiep.core.config.LimitsConfigLoader;
 import com.kiemhiep.core.config.ModuleConfigLoaderImpl;
 import com.kiemhiep.core.config.RedisConfigLoader;
+import com.kiemhiep.api.repository.CultivationRepository;
+import com.kiemhiep.api.repository.PlayerRepository;
+import com.kiemhiep.api.service.CultivationService;
 import com.kiemhiep.core.database.DataSourceHolder;
+import com.kiemhiep.core.database.JdbcCultivationRepository;
+import com.kiemhiep.core.database.JdbcPlayerRepository;
 import com.kiemhiep.core.database.JdbcServerMetricsRepository;
+import com.kiemhiep.core.repository.CachedCultivationRepository;
+import com.kiemhiep.core.repository.CachedPlayerRepository;
+import com.kiemhiep.cultivation.CultivationModule;
+import com.kiemhiep.cultivation.CultivationServiceImpl;
 import com.kiemhiep.core.event.EventDispatcherImpl;
 import com.kiemhiep.core.monitor.ServerMetricsRecorder;
 import com.kiemhiep.core.sync.NoOpMessageBus;
@@ -100,6 +109,16 @@ public final class KiemhiepBootstrap {
         ModuleLoader.ModuleContextFactory contextFactory = moduleId ->
             new ModuleContextImpl(moduleId, registry, moduleConfigLoader, eventDispatcher, platformProvider);
         loader = new ModuleLoader(registry, configLoader, contextFactory);
+
+        if (dataSourceHolder != null) {
+            javax.sql.DataSource ds = dataSourceHolder.getDataSource();
+            PlayerRepository playerRepo = new JdbcPlayerRepository(ds);
+            CultivationRepository cultivationRepo = new JdbcCultivationRepository(ds);
+            playerRepo = new CachedPlayerRepository(playerRepo, distributedCache, messageBus);
+            cultivationRepo = new CachedCultivationRepository(cultivationRepo, distributedCache, messageBus);
+            CultivationService cultivationService = new CultivationServiceImpl(cultivationRepo, eventDispatcher);
+            registry.register(new CultivationModule(cultivationService, playerRepo));
+        }
 
         loader.loadAll();
         loader.applyConfig();
