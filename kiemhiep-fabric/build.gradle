@@ -1,0 +1,61 @@
+// kiemhiep-fabric/build.gradle
+// Server-side Fabric mod implementation
+
+plugins {
+    id 'fabric-loom'
+}
+
+archivesBaseName = 'kiemhiep-fabric'
+
+repositories {
+    maven {
+        name = 'LlamaLad7'
+        url = 'https://maven.llamalad7.com/'
+    }
+    maven {
+        name = 'Shedaniel'
+        url = 'https://maven.shedaniel.me/'
+    }
+    maven {
+        name = 'Terraformers'
+        url = 'https://maven.terraformersmc.com/'
+    }
+}
+
+dependencies {
+    // Minecraft and Fabric
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    // Internal modules
+    implementation project(':kiemhiep-api')
+    implementation project(':kiemhiep-data')
+
+    // Cardinal Components API
+    modImplementation include("com.github.LlamaLad7:Cardinal-Components-Base:6.1.0")
+    modImplementation include("com.github.LlamaLad7:Cardinal-Components-World:6.1.0")
+    modImplementation include("com.github.LlamaLad7:Cardinal-Components-Entity:6.1.0")
+
+    // Google Guice for Dependency Injection
+    implementation 'com.google.inject:guice:7.0.0'
+}
+
+loom {
+    accessWidenerPath = file("src/main/resources/kiemhiep.accesswidener")
+
+    mods {
+        "kiemhiep" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": inputs.properties.version
+    }
+}

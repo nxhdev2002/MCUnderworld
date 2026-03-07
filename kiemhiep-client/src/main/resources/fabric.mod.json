@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "kiemhiep-client",
+  "version": "${version}",
+  "name": "KiemHiep Client",
+  "description": "Client-side features for KiemHiep mod - HUD, screens, particles",
+  "authors": ["KiemHiep Team"],
+  "contact": {
+    "homepage": "https://github.com/kiemhiep",
+    "sources": "https://github.com/kiemhiep/fabric"
+  },
+  "license": "MIT",
+  "icon": "assets/kiemhiep/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.kiemhiep.client.KiemHiepClient"
+    ]
+  },
+  "mixins": [
+    "kiemhiep.client.mixins.json"
+  ],
+  "accessWidener": "kiemhiep-client.accesswidener",
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": ">=0.141.3",
+    "cardinal-components-base": ">=6.1.0",
+    "cardinal-components-entity": ">=6.1.0",
+    "kiemhiep": ">=${version}"
+  }
+}

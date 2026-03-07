@@ -1,0 +1,61 @@
+// kiemhiep-client/build.gradle
+// Client-side Fabric mod implementation
+
+plugins {
+    id 'fabric-loom'
+}
+
+archivesBaseName = 'kiemhiep-client'
+
+repositories {
+    maven {
+        name = 'LlamaLad7'
+        url = 'https://maven.llamalad7.com/'
+    }
+    maven {
+        name = 'Shedaniel'
+        url = 'https://maven.shedaniel.me/'
+    }
+}
+
+dependencies {
+    // Minecraft and Fabric
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    // Internal dependency
+    implementation project(':kiemhiep-api')
+
+    // Cardinal Components API (for component sync)
+    modImplementation include("com.github.LlamaLad7:Cardinal-Components-Base:6.1.0")
+    modImplementation include("com.github.LlamaLad7:Cardinal-Components-Entity:6.1.0")
+
+    // Cloth Config API (optional, for config UI)
+    modImplementation("me.shedaniel.cloth:cloth-config-fabric:15.0.140") {
+        exclude(group: "net.fabricmc.fabric-api")
+    }
+}
+
+loom {
+    accessWidenerPath = file("src/main/resources/kiemhiep-client.accesswidener")
+
+    mods {
+        "kiemhiep-client" {
+            sourceSet sourceSets.main
+        }
+    }
+
+    runClient {
+        programArgs "--username", "Dev"
+    }
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": inputs.properties.version
+    }
+}

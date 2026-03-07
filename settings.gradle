@@ -1,0 +1,20 @@
+pluginManagement {
+    repositories {
+        maven {
+            name = 'Fabric'
+            url = 'https://maven.fabricmc.net/'
+        }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+rootProject.name = 'kiemhiep'
+
+// Tạm thời chỉ build các module không phụ thuộc Fabric Loom
+include 'kiemhiep-api'
+include 'kiemhiep-data'
+
+// Các module Fabric sẽ được enable sau
+// include 'kiemhiep-fabric'
+// include 'kiemhiep-client'

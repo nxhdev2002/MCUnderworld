@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "kiemhiep",
+  "version": "${version}",
+  "name": "KiemHiep",
+  "description": "Kiếm Hiệp themed mod - Tiên hiệp cultivation system",
+  "authors": ["KiemHiep Team"],
+  "contact": {
+    "homepage": "https://github.com/kiemhiep",
+    "sources": "https://github.com/kiemhiep/fabric"
+  },
+  "license": "MIT",
+  "icon": "assets/kiemhiep/icon.png",
+  "environment": "server",
+  "entrypoints": {
+    "main": [
+      "com.kiemhiep.fabric.KiemHiepMod"
+    ],
+    "cardinal-components": [
+      "com.kiemhiep.fabric.components.ModComponents"
+    ]
+  },
+  "mixins": [
+    "kiemhiep.mixins.json"
+  ],
+  "accessWidener": "kiemhiep.accesswidener",
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": ">=0.141.3",
+    "cardinal-components-base": ">=6.1.0",
+    "cardinal-components-entity": ">=6.1.0",
+    "cardinal-components-world": ">=6.1.0"
+  }
+}

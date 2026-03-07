@@ -1,0 +1,31 @@
+// kiemhiep-data/build.gradle
+// Data module - PostgreSQL + Redis repositories and database management
+
+plugins {
+    id 'java-library'
+}
+
+base {
+    archivesName = 'kiemhiep-data'
+}
+
+dependencies {
+    // Internal dependency
+    api project(':kiemhiep-api')
+
+    // HikariCP - Database connection pool
+    api 'com.zaxxer:HikariCP:6.0.0'
+
+    // PostgreSQL Driver
+    api 'org.postgresql:postgresql:42.7.3'
+
+    // Flyway - Database migration
+    api 'org.flywaydb:flyway-core:10.17.0'
+    api 'org.flywaydb:flyway-database-postgresql:10.17.0'
+
+    // Lettuce - Redis client (async)
+    api 'io.lettuce:lettuce-core:6.3.2.RELEASE'
+
+    // SLF4J for logging
+    implementation 'org.slf4j:slf4j-api:2.0.9'
+}

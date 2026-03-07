@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew build --no-daemon)",
+      "Bash(./gradlew :kiemhiep-api:build --no-daemon)",
+      "Bash(./gradlew :kiemhiep-api:build :kiemhiep-data:build --no-daemon)"
+    ]
+  }
+}

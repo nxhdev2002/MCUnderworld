@@ -1,0 +1,33 @@
+{
+  "formatVersion": 1,
+  "clientEntries": {
+  },
+  "serverEntries": {
+  },
+  "entries": {
+    "kiemhiep:cultivation": {
+      "type": "entity",
+      "entityTypes": [
+        "minecraft:player"
+      ]
+    },
+    "kiemhiep:skill": {
+      "type": "entity",
+      "entityTypes": [
+        "minecraft:player"
+      ]
+    },
+    "kiemhiep:wallet": {
+      "type": "entity",
+      "entityTypes": [
+        "minecraft:player"
+      ]
+    },
+    "kiemhiep:quest": {
+      "type": "entity",
+      "entityTypes": [
+        "minecraft:player"
+      ]
+    }
+  }
+}
