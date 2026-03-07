@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 public interface EventDispatcher {
 
     /**
-     * Gửi event tới mọi handler đã đăng ký cho type của event (và supertype).
+     * Gửi event tới mọi handler đã đăng ký cho đúng type của event (exact type, không dispatch theo supertype).
      */
     void fire(Object event);
 

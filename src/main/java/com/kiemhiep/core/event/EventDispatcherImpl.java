@@ -2,10 +2,10 @@ package com.kiemhiep.core.event;
 
 import com.kiemhiep.api.event.EventDispatcher;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 /**
@@ -27,8 +27,7 @@ public class EventDispatcherImpl implements EventDispatcher {
         if (list == null || list.isEmpty()) {
             return;
         }
-        List<Consumer<?>> copy = new ArrayList<>(list);
-        for (Consumer<?> h : copy) {
+        for (Consumer<?> h : list) {
             ((Consumer<Object>) h).accept(event);
         }
     }
@@ -38,7 +37,7 @@ public class EventDispatcherImpl implements EventDispatcher {
         if (eventType == null || handler == null) {
             return;
         }
-        handlersByType.computeIfAbsent(eventType, k -> new ArrayList<>()).add(handler);
+        handlersByType.computeIfAbsent(eventType, k -> new CopyOnWriteArrayList<>()).add(handler);
     }
 
     @Override

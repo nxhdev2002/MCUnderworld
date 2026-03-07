@@ -4,19 +4,25 @@ import com.kiemhiep.api.platform.EntityAdapter;
 import com.kiemhiep.api.platform.PlatformProvider;
 import com.kiemhiep.api.platform.PlayerAdapter;
 import com.kiemhiep.api.platform.WorldAdapter;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+
 import java.util.Optional;
 import java.util.UUID;
 
 /**
  * PlatformProvider dùng MinecraftServer (Fabric).
- * Server được set khi server start (setServer).
+ * Tự đăng ký SERVER_STARTED để nhận server; bootstrap không cần cast hay gọi setServer.
  */
 public class FabricPlatformProvider implements PlatformProvider {
 
     private volatile MinecraftServer server;
+
+    public FabricPlatformProvider() {
+        ServerLifecycleEvents.SERVER_STARTED.register(this::setServer);
+    }
 
     public void setServer(MinecraftServer server) {
         this.server = server;

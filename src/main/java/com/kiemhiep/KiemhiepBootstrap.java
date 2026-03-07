@@ -15,7 +15,6 @@ import com.kiemhiep.core.module.ModuleLoader;
 import com.kiemhiep.core.module.ModuleRegistryImpl;
 import com.kiemhiep.core.monitor.TPSMonitor;
 import com.kiemhiep.platform.FabricPlatformProvider;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 
@@ -56,17 +55,12 @@ public final class KiemhiepBootstrap {
 
         ModuleCommands.register(() -> registry, () -> loader);
 
-        ServerLifecycleEvents.SERVER_STARTED.register(KiemhiepBootstrap::onServerStarted);
         ServerTickEvents.END_SERVER_TICK.register(KiemhiepBootstrap::onServerTickEnd);
 
         Kiemhiep.LOGGER.info("KiemHiep core initialized.");
     }
 
     private static long lastTickTime = 0;
-
-    private static void onServerStarted(MinecraftServer server) {
-        ((FabricPlatformProvider) platformProvider).setServer(server);
-    }
 
     private static void onServerTickEnd(MinecraftServer server) {
         long now = System.currentTimeMillis();
