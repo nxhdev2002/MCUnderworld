@@ -56,7 +56,9 @@ public class CachedPlayerRepository implements PlayerRepository {
         String key = CacheKeys.playerById(id);
         String cached = cache.get(key);
         if (cached != null) {
-            return Optional.ofNullable(fromJson(cached));
+            Player parsed = fromJson(cached);
+            if (parsed != null) return Optional.of(parsed);
+            cache.delete(key);
         }
         Optional<Player> p = delegate.getById(id);
         p.ifPresent(player -> cache.set(key, toJson(player), CACHE_TTL_SECONDS));
@@ -68,7 +70,9 @@ public class CachedPlayerRepository implements PlayerRepository {
         String key = CacheKeys.playerByUuid(uuid);
         String cached = cache.get(key);
         if (cached != null) {
-            return Optional.ofNullable(fromJson(cached));
+            Player parsed = fromJson(cached);
+            if (parsed != null) return Optional.of(parsed);
+            cache.delete(key);
         }
         Optional<Player> p = delegate.getByUuid(uuid);
         p.ifPresent(player -> cache.set(key, toJson(player), CACHE_TTL_SECONDS));

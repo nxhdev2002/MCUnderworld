@@ -1,5 +1,6 @@
 package com.kiemhiep.core.monitor;
 
+import com.kiemhiep.Kiemhiep;
 import com.kiemhiep.api.model.ServerMetrics;
 import com.kiemhiep.api.repository.ServerMetricsRepository;
 
@@ -34,7 +35,8 @@ public class ServerMetricsRecorder {
         if (now - last >= intervalMs && lastRecordTime.compareAndSet(last, now)) {
             try {
                 repository.save(new ServerMetrics(0, serverId, Instant.now(), tps, (long) tickTimeMs));
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                Kiemhiep.LOGGER.warn("Failed to record server metrics", e);
                 lastRecordTime.set(last); // allow retry next tick
             }
         }

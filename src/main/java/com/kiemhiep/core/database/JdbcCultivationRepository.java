@@ -101,6 +101,7 @@ public class JdbcCultivationRepository implements CultivationRepository {
         }
     }
 
+    /** For admin or small datasets only; loads full table into memory. */
     @Override
     public List<Cultivation> findAll() {
         String sql = "SELECT id, player_id, level, exp, created_at, updated_at FROM kiemhiep_cultivation";

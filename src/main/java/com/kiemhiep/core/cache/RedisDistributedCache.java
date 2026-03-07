@@ -4,10 +4,9 @@ import com.kiemhiep.api.cache.DistributedCache;
 import com.kiemhiep.core.config.RedisConfig;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
+import io.lettuce.core.SetArgs;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
-
-import java.time.Duration;
 
 /**
  * Redis implementation of DistributedCache. Key format: kiemhiep:&lt;domain&gt;:&lt;id&gt;
@@ -36,9 +35,10 @@ public class RedisDistributedCache implements DistributedCache {
 
     @Override
     public void set(String key, String value, long ttlSeconds) {
-        commands.set(key, value);
         if (ttlSeconds > 0) {
-            commands.expire(key, Duration.ofSeconds(ttlSeconds));
+            commands.set(key, value, SetArgs.Builder.ex(ttlSeconds));
+        } else {
+            commands.set(key, value);
         }
     }
 

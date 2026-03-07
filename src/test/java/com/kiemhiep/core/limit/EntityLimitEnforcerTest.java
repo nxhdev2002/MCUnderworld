@@ -62,4 +62,29 @@ class EntityLimitEnforcerTest {
     void getCurrentCount_returnsZeroForUnknownType() {
         assertEquals(0, enforcer.getCurrentCount("unknown"));
     }
+
+    @Test
+    void tryRecordSpawn_returnsTrueAndIncrementsWhenUnderLimit() {
+        assertTrue(enforcer.tryRecordSpawn("mob"));
+        assertEquals(1, enforcer.getCurrentCount("mob"));
+        assertTrue(enforcer.tryRecordSpawn("mob"));
+        assertTrue(enforcer.tryRecordSpawn("mob"));
+        assertEquals(3, enforcer.getCurrentCount("mob"));
+    }
+
+    @Test
+    void tryRecordSpawn_returnsFalseWhenAtLimit() {
+        for (int i = 0; i < 1000; i++) {
+            assertTrue(enforcer.tryRecordSpawn("mob"));
+        }
+        assertEquals(1000, enforcer.getCurrentCount("mob"));
+        assertFalse(enforcer.tryRecordSpawn("mob"));
+        assertEquals(1000, enforcer.getCurrentCount("mob"));
+    }
+
+    @Test
+    void tryRecordSpawn_returnsFalseForNull() {
+        assertFalse(enforcer.tryRecordSpawn(null));
+        assertEquals(0, enforcer.getCurrentCount("mob"));
+    }
 }

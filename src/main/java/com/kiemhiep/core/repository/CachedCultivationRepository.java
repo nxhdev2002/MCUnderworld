@@ -56,7 +56,9 @@ public class CachedCultivationRepository implements CultivationRepository {
         String key = CacheKeys.cultivationById(id);
         String cached = cache.get(key);
         if (cached != null) {
-            return Optional.ofNullable(fromJson(cached));
+            Cultivation parsed = fromJson(cached);
+            if (parsed != null) return Optional.of(parsed);
+            cache.delete(key);
         }
         Optional<Cultivation> c = delegate.getById(id);
         c.ifPresent(cult -> cache.set(key, toJson(cult), CACHE_TTL_SECONDS));
@@ -68,7 +70,9 @@ public class CachedCultivationRepository implements CultivationRepository {
         String key = CacheKeys.cultivationByPlayer(playerId);
         String cached = cache.get(key);
         if (cached != null) {
-            return Optional.ofNullable(fromJson(cached));
+            Cultivation parsed = fromJson(cached);
+            if (parsed != null) return Optional.of(parsed);
+            cache.delete(key);
         }
         Optional<Cultivation> c = delegate.getByPlayerId(playerId);
         c.ifPresent(cult -> cache.set(key, toJson(cult), CACHE_TTL_SECONDS));

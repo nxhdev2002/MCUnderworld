@@ -84,6 +84,7 @@ public class JdbcSectRepository implements SectRepository {
         }
     }
 
+    /** For admin or small datasets only; loads full table into memory. */
     @Override
     public List<Sect> findAll() {
         String sql = "SELECT id, name, created_at, updated_at FROM kiemhiep_sects";

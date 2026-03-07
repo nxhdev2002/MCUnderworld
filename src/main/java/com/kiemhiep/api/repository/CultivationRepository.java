@@ -15,5 +15,9 @@ public interface CultivationRepository {
 
     void deleteById(long id);
 
+    /**
+     * Returns all cultivation records. For admin or small datasets only; do not use in hot path.
+     * Large tables will load entirely into memory.
+     */
     List<Cultivation> findAll();
 }

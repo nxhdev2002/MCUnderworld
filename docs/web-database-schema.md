@@ -164,3 +164,11 @@ FROM kiemhiep_server_metrics
 WHERE server_id = ? AND ts >= NOW() - INTERVAL '1 hour'
 ORDER BY ts ASC;
 ```
+
+---
+
+## Config & security
+
+- **Không commit file config thật:** `config/kiemhiep/database.json` và `config/kiemhiep/redis.json` chứa username/password. Thêm vào `.gitignore` hoặc dùng file mẫu; không đẩy secret lên repo.
+- **Production:** Nên đọc password từ biến môi trường hoặc secret manager. Có thể bổ sung hỗ trợ placeholder (vd. `"password": "${DB_PASSWORD}"`) và resolve khi load trong phiên bản sau.
+- **Log:** Loader chỉ log đường dẫn file khi lỗi, không in nội dung config hay password.
