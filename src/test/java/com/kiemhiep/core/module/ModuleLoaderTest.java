@@ -26,7 +26,7 @@ class ModuleLoaderTest {
         configLoader = new ConfigLoader(tempDir.resolve("config/kiemhiep"));
         configLoader.loadModulesConfig();
         registry = new ModuleRegistryImpl(configLoader);
-        ModuleLoader.ModuleContextFactory factory = moduleId -> new ModuleContextImpl(moduleId, registry, new ModuleConfigLoaderImpl(configLoader));
+        ModuleLoader.ModuleContextFactory factory = moduleId -> new ModuleContextImpl(moduleId, registry, new ModuleConfigLoaderImpl(configLoader), new StubEventDispatcher(), new StubPlatformProvider());
         loader = new ModuleLoader(registry, configLoader, factory);
     }
 
