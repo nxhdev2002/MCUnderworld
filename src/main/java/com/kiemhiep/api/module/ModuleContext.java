@@ -1,8 +1,10 @@
 package com.kiemhiep.api.module;
 
+import com.kiemhiep.api.event.EventDispatcher;
+import com.kiemhiep.api.platform.PlatformProvider;
+
 /**
  * Context truyền vào onLoad và onEnable của module.
- * Phase 02 sẽ bổ sung EventDispatcher, PlatformProvider, Injector.
  */
 public interface ModuleContext {
 
@@ -14,4 +16,10 @@ public interface ModuleContext {
 
     /** Config loader để đọc file config của module (vd. config/kiemhiep/modules/cultivation.json). */
     ModuleConfigLoader getModuleConfigLoader();
+
+    /** Event dispatcher để fire/register events. */
+    EventDispatcher getEventDispatcher();
+
+    /** Platform provider để lấy player, world, entity (api-agnostic). */
+    PlatformProvider getPlatformProvider();
 }
