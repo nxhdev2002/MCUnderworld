@@ -45,10 +45,18 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
+	// Data layer (Phase 03) — do not use modImplementation to avoid remap
+	implementation "com.zaxxer:HikariCP:5.1.0"
+	implementation "org.flywaydb:flyway-core:10.22.0"
+	implementation "org.flywaydb:flyway-database-postgresql:10.22.0"
+	implementation "org.postgresql:postgresql:42.7.3"
+	implementation "io.lettuce:lettuce-core:6.2.6.RELEASE"
+
 	// Unit tests (JUnit 5)
 	testImplementation "org.junit.jupiter:junit-jupiter:5.10.2"
 	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 	testImplementation sourceSets.main.output
+	testImplementation "com.h2database:h2:2.2.224"
 }
 
 test {

@@ -68,14 +68,16 @@ class EntityLimitEnforcerTest {
         assertTrue(enforcer.tryRecordSpawn("mob"));
         assertEquals(1, enforcer.getCurrentCount("mob"));
         assertTrue(enforcer.tryRecordSpawn("mob"));
-        assertEquals(2, enforcer.getCurrentCount("mob"));
+        assertTrue(enforcer.tryRecordSpawn("mob"));
+        assertEquals(3, enforcer.getCurrentCount("mob"));
     }
 
     @Test
     void tryRecordSpawn_returnsFalseWhenAtLimit() {
         for (int i = 0; i < 1000; i++) {
-            enforcer.recordSpawn("mob");
+            assertTrue(enforcer.tryRecordSpawn("mob"));
         }
+        assertEquals(1000, enforcer.getCurrentCount("mob"));
         assertFalse(enforcer.tryRecordSpawn("mob"));
         assertEquals(1000, enforcer.getCurrentCount("mob"));
     }
@@ -83,5 +85,6 @@ class EntityLimitEnforcerTest {
     @Test
     void tryRecordSpawn_returnsFalseForNull() {
         assertFalse(enforcer.tryRecordSpawn(null));
+        assertEquals(0, enforcer.getCurrentCount("mob"));
     }
 }
