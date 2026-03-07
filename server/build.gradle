@@ -1,0 +1,78 @@
+plugins {
+	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+	id 'maven-publish'
+}
+
+base {
+	archivesName = 'kiemhiep-server'
+}
+
+repositories {
+	mavenCentral()
+}
+
+loom {
+	mods {
+		"kiemhiep" {
+			sourceSet sourceSets.main
+		}
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings loom.officialMojangMappings()
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+	implementation "com.zaxxer:HikariCP:5.1.0"
+	implementation "org.flywaydb:flyway-core:10.22.0"
+	implementation "org.flywaydb:flyway-database-postgresql:10.22.0"
+	implementation "org.postgresql:postgresql:42.7.3"
+	implementation "io.lettuce:lettuce-core:6.2.6.RELEASE"
+	implementation "org.reactivestreams:reactive-streams:1.0.4"
+	implementation "io.projectreactor:reactor-core:3.6.6"
+	implementation "com.fasterxml.jackson.core:jackson-databind:2.18.2"
+
+	// Bundle libraries into the mod JAR so they are available at runtime (e.g. when launched via Fabric installer)
+	include "com.zaxxer:HikariCP:5.1.0"
+	include "com.fasterxml.jackson.core:jackson-databind:2.18.2"
+	include "com.fasterxml.jackson.core:jackson-core:2.18.2"
+	include "com.fasterxml.jackson.core:jackson-annotations:2.18.2"
+	include "org.flywaydb:flyway-core:10.22.0"
+	include "org.flywaydb:flyway-database-postgresql:10.22.0"
+	include "org.postgresql:postgresql:42.7.3"
+	include "io.lettuce:lettuce-core:6.2.6.RELEASE"
+	include "org.reactivestreams:reactive-streams:1.0.4"
+	include "io.projectreactor:reactor-core:3.6.6"
+
+	testImplementation "org.junit.jupiter:junit-jupiter:5.10.2"
+	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+	testImplementation "com.h2database:h2:2.2.224"
+}
+
+test {
+	useJUnitPlatform()
+}
+
+processResources {
+	inputs.property "version", project.version
+	filesMatching("fabric.mod.json") {
+		expand "version": inputs.properties.version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 21
+}
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
+}
+
+jar {
+	from(rootProject.file("LICENSE")) {
+		rename { "${it}_${project.base.archivesName.get()}" }
+	}
+}
