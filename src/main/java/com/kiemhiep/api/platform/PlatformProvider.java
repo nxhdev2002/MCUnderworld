@@ -12,7 +12,12 @@ public interface PlatformProvider {
     /** Lấy player theo UUID. */
     Optional<PlayerAdapter> getPlayer(UUID uuid);
 
-    /** Lấy world theo ID (vd. "minecraft:overworld"). */
+    /**
+     * Lấy world theo ID.
+     *
+     * @param worldId dimension registry key string, ví dụ "minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"
+     * @return adapter của world nếu tìm thấy
+     */
     Optional<WorldAdapter> getWorld(String worldId);
 
     /** Lấy entity theo UUID (nếu có). */

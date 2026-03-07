@@ -1,8 +1,10 @@
 package com.kiemhiep;
 
 import com.kiemhiep.api.event.EventDispatcher;
+import com.kiemhiep.api.event.EventDispatcher;
 import com.kiemhiep.api.module.ModuleContext;
 import com.kiemhiep.api.module.ModuleRegistry;
+import com.kiemhiep.api.platform.PlatformProvider;
 import com.kiemhiep.api.platform.PlatformProvider;
 import com.kiemhiep.core.command.ModuleCommands;
 import com.kiemhiep.api.cache.DistributedCache;
@@ -36,6 +38,8 @@ import java.util.Optional;
 /**
  * Khởi tạo core: config, module registry/loader, event dispatcher, platform provider,
  * limits enforcer, TPS monitor; load + apply config; đăng ký lệnh và server lifecycle.
+ * Khởi tạo core: config, module registry/loader, event dispatcher, platform provider,
+ * limits enforcer, TPS monitor; load + apply config; đăng ký lệnh và server lifecycle.
  */
 public final class KiemhiepBootstrap {
 
@@ -48,6 +52,11 @@ public final class KiemhiepBootstrap {
     private static MessageBus messageBus;
     private static ModuleRegistry registry;
     private static ModuleLoader loader;
+    private static EventDispatcher eventDispatcher;
+    private static PlatformProvider platformProvider;
+    private static LimitsConfigLoader limitsConfigLoader;
+    private static EntityLimitEnforcer entityLimitEnforcer;
+    private static TPSMonitor tpsMonitor;
     private static EventDispatcher eventDispatcher;
     private static PlatformProvider platformProvider;
     private static LimitsConfigLoader limitsConfigLoader;
@@ -98,6 +107,7 @@ public final class KiemhiepBootstrap {
         registry = new ModuleRegistryImpl(configLoader);
         ModuleConfigLoaderImpl moduleConfigLoader = new ModuleConfigLoaderImpl(configLoader);
         ModuleLoader.ModuleContextFactory contextFactory = moduleId ->
+            new ModuleContextImpl(moduleId, registry, moduleConfigLoader, eventDispatcher, platformProvider);
             new ModuleContextImpl(moduleId, registry, moduleConfigLoader, eventDispatcher, platformProvider);
         loader = new ModuleLoader(registry, configLoader, contextFactory);
 
