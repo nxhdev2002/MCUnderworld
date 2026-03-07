@@ -3,6 +3,7 @@ package com.kiemhiep.cultivation;
 import com.kiemhiep.api.model.Player;
 import com.kiemhiep.api.service.CultivationService;
 import com.kiemhiep.api.service.PlayerService;
+import com.kiemhiep.core.command.CommandPermissionHelper;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.LongArgumentType;
 import net.minecraft.commands.CommandSourceStack;
@@ -23,9 +24,11 @@ public final class CultivationCommands {
             .then(Commands.literal("info")
                 .executes(ctx -> executeInfo(ctx.getSource(), cultivationService, playerService, null))
                 .then(Commands.argument("player", net.minecraft.commands.arguments.EntityArgument.player())
+                    .requires(source -> CommandPermissionHelper.hasPermissionLevel(source, 2))
                     .executes(ctx -> executeInfo(ctx.getSource(), cultivationService, playerService,
                         net.minecraft.commands.arguments.EntityArgument.getPlayer(ctx, "player")))))
             .then(Commands.literal("addExp")
+                .requires(source -> CommandPermissionHelper.hasPermissionLevel(source, 2))
                 .then(Commands.argument("player", net.minecraft.commands.arguments.EntityArgument.player())
                     .then(Commands.argument("amount", LongArgumentType.longArg(0))
                         .executes(ctx -> executeAddExp(ctx.getSource(), cultivationService, playerService,

@@ -33,12 +33,14 @@ dependencies {
 	implementation "org.reactivestreams:reactive-streams:1.0.4"
 	implementation "io.projectreactor:reactor-core:3.6.6"
 	implementation "com.fasterxml.jackson.core:jackson-databind:2.18.2"
+	implementation "com.google.code.gson:gson:2.10.1"
 
 	// Bundle libraries into the mod JAR so they are available at runtime (e.g. when launched via Fabric installer)
 	include "com.zaxxer:HikariCP:5.1.0"
 	include "com.fasterxml.jackson.core:jackson-databind:2.18.2"
 	include "com.fasterxml.jackson.core:jackson-core:2.18.2"
 	include "com.fasterxml.jackson.core:jackson-annotations:2.18.2"
+	include "com.google.code.gson:gson:2.10.1"
 	include "org.flywaydb:flyway-core:10.22.0"
 	include "org.flywaydb:flyway-database-postgresql:10.22.0"
 	include "org.postgresql:postgresql:42.7.3"

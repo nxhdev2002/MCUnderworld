@@ -1,6 +1,7 @@
 package com.kiemhiep.core.command;
 
 import com.kiemhiep.api.module.ModuleRegistry;
+import com.kiemhiep.core.command.CommandPermissionHelper;
 import com.kiemhiep.core.module.ModuleLoader;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -23,6 +24,7 @@ public final class ModuleCommands {
 
     private static void register(CommandDispatcher<CommandSourceStack> dispatcher, ModuleRegistry registry, ModuleLoader loader) {
         var module = Commands.literal("module")
+            .requires(source -> CommandPermissionHelper.hasPermissionLevel(source, 2))
             .then(Commands.literal("list")
                 .executes(ctx -> executeList(ctx.getSource(), registry)))
             .then(Commands.literal("reload")
