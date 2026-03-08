@@ -74,13 +74,8 @@ public final class SkillManager {
         }
 
         int manaCost = definition.manaCost();
-        if (manaCost > 0 && manaProvider.isPresent()) {
-            if (manaProvider.get().getCurrentMana(casterId) < manaCost) {
-                return UseResult.INSUFFICIENT_MANA;
-            }
-            if (!manaProvider.get().consumeMana(casterId, manaCost)) {
-                return UseResult.INSUFFICIENT_MANA;
-            }
+        if (manaCost > 0 && manaProvider.isPresent() && !manaProvider.get().consumeMana(casterId, manaCost)) {
+            return UseResult.INSUFFICIENT_MANA;
         }
 
         if (definition.castTimeTicks() > 0) {
