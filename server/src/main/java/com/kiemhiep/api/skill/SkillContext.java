@@ -31,4 +31,10 @@ public interface SkillContext {
 
     /** Current server tick when execution started. */
     long getServerTick();
+
+    /**
+     * Effect runner for playing particles/effects (e.g. tornado, tsunami, meteor).
+     * May be null in headless or test environments.
+     */
+    IEffectRunner getEffectRunner();
 }

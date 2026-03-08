@@ -12,9 +12,23 @@ import com.kiemhiep.core.database.JdbcSkillDefinitionRepository;
 import com.kiemhiep.api.model.SkillDefinition;
 import com.kiemhiep.core.skill.impl.FireballSkill;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.event.player.UseItemCallback;
+import com.kiemhiep.cultivation.CultivationModule;
+import com.kiemhiep.platform.FabricEffectManager;
+import com.kiemhiep.platform.FabricPlatformProvider;
 import com.kiemhiep.platform.SkillItemRegistrationHelper;
+import com.kiemhiep.platform.network.PlayerStatsPayload;
+import com.kiemhiep.platform.network.SkillNetworking;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -40,6 +54,7 @@ public class SkillModule implements KiemHiepModule {
     private CastStateManager castStateManager;
     private JdbcPlayerRepository playerRepository;
     private long serverTickCounter;
+    private InMemoryManaProvider manaProvider;
 
     @Override
     public String getId() {
@@ -69,14 +84,16 @@ public class SkillModule implements KiemHiepModule {
         playerRepository = new JdbcPlayerRepository(ds);
         cooldownManager = new CooldownManager();
         castStateManager = new CastStateManager();
-        EffectManager effectManager = new EffectManager();
-        InMemoryManaProvider manaProvider = new InMemoryManaProvider();
-        skillManagerHolder = new SkillManager(definitionRepository, cooldownManager, castStateManager, effectManager, ctx.getPlatformProvider(), Optional.of(manaProvider));
+        EffectManager effectManager = ctx.getPlatformProvider() instanceof FabricPlatformProvider fpp
+            ? new FabricEffectManager(fpp) : new EffectManager();
+        this.manaProvider = new InMemoryManaProvider();
+        skillManagerHolder = new SkillManager(definitionRepository, cooldownManager, castStateManager, effectManager, ctx.getPlatformProvider(), Optional.of(this.manaProvider));
         skillServiceImpl = new SkillServiceImpl(definitionRepository, playerSkillRepo, skillManagerHolder);
         skillServiceHolder = skillServiceImpl;
 
         SkillRegistry.register("FIREBALL", FireballSkill.INSTANCE);
 
+        SkillNetworking.register();
         registerSkillItems();
     }
 
@@ -106,14 +123,59 @@ public class SkillModule implements KiemHiepModule {
         enabled = true;
         if (skillServiceImpl == null) return;
 
-        // UseItemCallback: when player uses item, resolve skill by item_id and call SkillService.useSkill.
-        // Return type is TypedActionResult<ItemStack> (Minecraft 1.21); uncomment when mapping confirmed.
-        // UseItemCallback.EVENT.register((player, world, hand) -> { ... });
+        UseItemCallback.EVENT.register((player, world, hand) -> {
+            if (world.isClientSide()) return InteractionResult.PASS;
+            Optional<SkillService> skillServiceOpt = getSkillService();
+            if (skillServiceOpt.isEmpty()) return InteractionResult.PASS;
+            ItemStack stack = player.getItemInHand(hand);
+            if (stack.isEmpty()) return InteractionResult.PASS;
+            String itemId = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+            if (!(world instanceof ServerLevel serverLevel)) return InteractionResult.PASS;
+            long serverTick = serverLevel.getServer().getTickCount();
+            Kiemhiep.LOGGER.debug("Item used (skill check): player={} itemId={} hand={}", player.getName().getString(), itemId, hand);
+            SkillManager.UseResult result = skillServiceOpt.get().useSkill(player.getUUID(), itemId, serverTick);
+            if (result == SkillManager.UseResult.SUCCESS) {
+                skillServiceOpt.get().getByItemId(itemId).ifPresent(def -> {
+                    if (def.consumable()) stack.shrink(1);
+                });
+                Kiemhiep.LOGGER.info("Skill use success: player={} itemId={} result={}", player.getName().getString(), itemId, result);
+                return InteractionResult.SUCCESS;
+            }
+            if (result == SkillManager.UseResult.CAST_STARTED) {
+                Kiemhiep.LOGGER.info("Skill cast started (use item): player={} itemId={}", player.getName().getString(), itemId);
+                return InteractionResult.SUCCESS;
+            }
+            if (result != SkillManager.UseResult.SUCCESS && result != SkillManager.UseResult.CAST_STARTED) {
+                Kiemhiep.LOGGER.debug("Skill use not triggered: player={} itemId={} result={}", player.getName().getString(), itemId, result);
+            }
+            return InteractionResult.PASS;
+        });
 
         if (playerRepository != null) {
             SkillCommands.register(() -> skillServiceHolder, () -> playerRepository);
         }
         ServerTickEvents.END_SERVER_TICK.register(this::onServerTick);
+        registerPlayerStatsSync(ctx);
+    }
+
+    private static final int DEFAULT_MAX_MANA = 100;
+
+    private void registerPlayerStatsSync(ModuleContext ctx) {
+        if (manaProvider == null) return;
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            var serverPlayer = handler.getPlayer();
+            if (serverPlayer == null) return;
+            var cultOpt = ctx.getModuleRegistry().get("cultivation");
+            if (cultOpt.isEmpty() || !(cultOpt.get() instanceof CultivationModule cm)) return;
+            var cultivationService = cm.getService();
+            var playerService = cm.getPlayerService();
+            var player = playerService.get(serverPlayer.getUUID().toString());
+            if (player.isEmpty()) return;
+            int level = cultivationService.get(player.get().id()).map(c -> c.level()).orElse(1);
+            int currentMana = manaProvider.getCurrentMana(serverPlayer.getUUID());
+            var payload = new PlayerStatsPayload(level, currentMana, DEFAULT_MAX_MANA);
+            ServerPlayNetworking.send(serverPlayer, payload);
+        });
     }
 
     private void onServerTick(MinecraftServer server) {

@@ -1,6 +1,7 @@
 package com.kiemhiep.core.skill;
 
 import com.kiemhiep.api.platform.Location;
+import com.kiemhiep.api.skill.IEffectRunner;
 import com.kiemhiep.api.skill.SkillContext;
 
 import java.util.UUID;
@@ -9,7 +10,7 @@ import java.util.UUID;
  * Helper for skill effects: particles, fake entity, S2C packets (Rule 3).
  * Implementation can send packets to client for particle/sound; prefer particle over real entity.
  */
-public class EffectManager {
+public class EffectManager implements IEffectRunner {
 
     /** Spawn particle at location (server may send S2C for client to render). */
     public void spawnParticleAt(Location location, String particleType, int count) {

@@ -1,5 +1,6 @@
 package com.kiemhiep.core.skill;
 
+import com.kiemhiep.Kiemhiep;
 import com.kiemhiep.api.model.SkillDefinition;
 import com.kiemhiep.api.platform.Location;
 import com.kiemhiep.api.platform.PlatformProvider;
@@ -61,26 +62,36 @@ public final class SkillManager {
      * @return SUCCESS if executed (consumable: caller should shrink stack), CAST_STARTED if cast began
      */
     public UseResult useSkill(UUID casterId, SkillDefinition definition, long serverTick) {
-        if (definition == null) return UseResult.INVALID_SKILL;
+        if (definition == null) {
+            Kiemhiep.LOGGER.debug("useSkill: definition null");
+            return UseResult.INVALID_SKILL;
+        }
 
         Optional<ISkill> skillOpt = SkillRegistry.get(definition.behaviorId());
-        if (skillOpt.isEmpty()) return UseResult.INVALID_SKILL;
+        if (skillOpt.isEmpty()) {
+            Kiemhiep.LOGGER.debug("useSkill: no skill for behaviorId={}", definition.behaviorId());
+            return UseResult.INVALID_SKILL;
+        }
 
         if (cooldownManager.isOnCooldown(casterId, definition.skillId())) {
+            Kiemhiep.LOGGER.debug("useSkill: on cooldown casterId={} skillId={}", casterId, definition.skillId());
             return UseResult.ON_COOLDOWN;
         }
         if (castStateManager.isCasting(casterId)) {
+            Kiemhiep.LOGGER.debug("useSkill: already casting casterId={}", casterId);
             return UseResult.ALREADY_CASTING;
         }
 
         int manaCost = definition.manaCost();
         if (manaCost > 0 && manaProvider.isPresent() && !manaProvider.get().consumeMana(casterId, manaCost)) {
+            Kiemhiep.LOGGER.debug("useSkill: insufficient mana casterId={} skillId={} cost={}", casterId, definition.skillId(), manaCost);
             return UseResult.INSUFFICIENT_MANA;
         }
 
         if (definition.castTimeTicks() > 0) {
             long castEndTick = serverTick + definition.castTimeTicks();
             castStateManager.startCast(casterId, definition.skillId(), castEndTick, definition);
+            Kiemhiep.LOGGER.info("Skill cast started: casterId={} skillId={} castTimeTicks={}", casterId, definition.skillId(), definition.castTimeTicks());
             return UseResult.CAST_STARTED;
         }
 
@@ -91,6 +102,7 @@ public final class SkillManager {
     public void onCastComplete(UUID casterId, CastStateManager.CastEntry entry) {
         Optional<ISkill> skillOpt = SkillRegistry.get(entry.definition.behaviorId());
         if (skillOpt.isEmpty()) return;
+        Kiemhiep.LOGGER.info("Skill cast complete, executing: casterId={} skillId={}", casterId, entry.definition.skillId());
         doExecute(casterId, entry.definition, skillOpt.get(), entry.castEndTick);
     }
 
@@ -102,7 +114,8 @@ public final class SkillManager {
         if (world != null && definition.maxRadius() > 0) {
             targets = world.getEntitiesInRadius(origin, definition.maxRadius());
         }
-        SkillContext ctx = new SkillContextImpl(casterId, caster, definition, origin, targets, serverTick);
+        Kiemhiep.LOGGER.info("Skill executed: casterId={} skillId={} behaviorId={} targets={}", casterId, definition.skillId(), definition.behaviorId(), targets.size());
+        SkillContext ctx = new SkillContextImpl(casterId, caster, definition, origin, targets, serverTick, effectManager);
         skill.execute(ctx);
 
         long cooldownEndMillis = System.currentTimeMillis() + definition.cooldownTicks() * 50L;
