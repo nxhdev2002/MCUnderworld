@@ -58,4 +58,9 @@ public class SkillServiceImpl implements SkillService {
         if (def.isEmpty()) return UseResult.INVALID_SKILL;
         return skillManager.useSkill(casterId, def.get(), serverTick);
     }
+
+    @Override
+    public void clearDefinitionCache() {
+        definitionByItemId.clear();
+    }
 }

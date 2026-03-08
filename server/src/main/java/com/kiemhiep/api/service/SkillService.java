@@ -19,6 +19,9 @@ public interface SkillService {
 
     List<Skill> getPlayerSkills(long playerId);
 
+    /** Clear in-memory definition cache (e.g. when reloading skill definitions). */
+    void clearDefinitionCache();
+
     /**
      * Use skill from item. Resolves definition by itemId, validates and executes via SkillManager.
      *
