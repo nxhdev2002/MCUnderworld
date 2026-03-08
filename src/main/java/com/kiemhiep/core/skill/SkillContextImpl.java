@@ -1,6 +1,7 @@
 package com.kiemhiep.core.skill;
 
 import com.kiemhiep.api.model.SkillDefinition;
+import com.kiemhiep.api.platform.EntityAdapter;
 import com.kiemhiep.api.platform.Location;
 import com.kiemhiep.api.platform.PlayerAdapter;
 import com.kiemhiep.api.skill.SkillContext;
@@ -13,7 +14,7 @@ public record SkillContextImpl(
     PlayerAdapter caster,
     SkillDefinition definition,
     Location origin,
-    List<?> targetsInRadius,
+    List<EntityAdapter> targetsInRadius,
     long serverTick
 ) implements SkillContext {
 
@@ -38,7 +39,7 @@ public record SkillContextImpl(
     }
 
     @Override
-    public List<?> getTargetsInRadius() {
+    public List<EntityAdapter> getTargetsInRadius() {
         return targetsInRadius;
     }
 

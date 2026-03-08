@@ -5,42 +5,25 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Server-only cooldown: (playerId, skillId) -> cooldownEndTime (millis).
- * Updated every 5-10 tick; client only displays cooldown (Rule 6).
+ * Uses string composite key to avoid allocation in hot path.
  */
 public final class CooldownManager {
 
-    private static final class Key {
-        final UUID playerId;
-        final String skillId;
+    private static final String KEY_SEP = ":";
 
-        Key(UUID playerId, String skillId) {
-            this.playerId = playerId;
-            this.skillId = skillId;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Key key = (Key) o;
-            return playerId.equals(key.playerId) && skillId.equals(key.skillId);
-        }
-
-        @Override
-        public int hashCode() {
-            return 31 * playerId.hashCode() + skillId.hashCode();
-        }
+    private static String key(UUID playerId, String skillId) {
+        return playerId.toString() + KEY_SEP + skillId;
     }
 
-    private final ConcurrentHashMap<Key, Long> cooldownEndByKey = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Long> cooldownEndByKey = new ConcurrentHashMap<>();
 
     public boolean isOnCooldown(UUID playerId, String skillId) {
-        Long end = cooldownEndByKey.get(new Key(playerId, skillId));
+        Long end = cooldownEndByKey.get(key(playerId, skillId));
         return end != null && end > System.currentTimeMillis();
     }
 
     public void setCooldown(UUID playerId, String skillId, long cooldownEndTimeMillis) {
-        cooldownEndByKey.put(new Key(playerId, skillId), cooldownEndTimeMillis);
+        cooldownEndByKey.put(key(playerId, skillId), cooldownEndTimeMillis);
     }
 
     /** Called every 5-10 tick to remove expired entries (optional, to avoid map growth). */
@@ -49,7 +32,7 @@ public final class CooldownManager {
     }
 
     public long getCooldownEndTimeMillis(UUID playerId, String skillId) {
-        Long end = cooldownEndByKey.get(new Key(playerId, skillId));
+        Long end = cooldownEndByKey.get(key(playerId, skillId));
         return end != null ? end : 0L;
     }
 

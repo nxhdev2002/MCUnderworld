@@ -24,28 +24,36 @@ public final class SkillCommands {
 
     public static void register(Supplier<SkillService> skillServiceSupplier, Supplier<PlayerRepository> playerRepositorySupplier) {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            register(dispatcher, skillServiceSupplier.get(), playerRepositorySupplier.get());
+            register(dispatcher, skillServiceSupplier, playerRepositorySupplier);
         });
     }
 
-    private static void register(CommandDispatcher<CommandSourceStack> dispatcher, SkillService skillService, PlayerRepository playerRepository) {
+    private static void register(CommandDispatcher<CommandSourceStack> dispatcher,
+                                 Supplier<SkillService> skillServiceSupplier,
+                                 Supplier<PlayerRepository> playerRepositorySupplier) {
         var skill = Commands.literal("skill")
             .then(Commands.literal("list")
-                .executes(ctx -> executeList(ctx.getSource(), skillService, playerRepository)))
+                .executes(ctx -> executeList(ctx.getSource(), skillServiceSupplier, playerRepositorySupplier)))
             .then(Commands.literal("info")
                 .then(Commands.argument("skillId", StringArgumentType.string())
-                    .executes(ctx -> executeInfo(ctx.getSource(), skillService, StringArgumentType.getString(ctx, "skillId")))))
+                    .executes(ctx -> executeInfo(ctx.getSource(), skillServiceSupplier, StringArgumentType.getString(ctx, "skillId")))))
             .then(Commands.literal("give")
                 .requires(s -> s.getEntity() instanceof ServerPlayer)
                 .then(Commands.argument("player", net.minecraft.commands.arguments.EntityArgument.player())
                     .then(Commands.argument("skillId", StringArgumentType.string())
                         .then(Commands.argument("count", IntegerArgumentType.integer(1, 64))
-                            .executes(ctx -> executeGive(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), skillService, StringArgumentType.getString(ctx, "skillId"), IntegerArgumentType.getInteger(ctx, "count"))))
-                        .executes(ctx -> executeGive(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), skillService, StringArgumentType.getString(ctx, "skillId"), 1)))));
+                            .executes(ctx -> executeGive(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), skillServiceSupplier, StringArgumentType.getString(ctx, "skillId"), IntegerArgumentType.getInteger(ctx, "count"))))
+                        .executes(ctx -> executeGive(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), skillServiceSupplier, StringArgumentType.getString(ctx, "skillId"), 1)))));
         dispatcher.register(skill);
     }
 
-    private static int executeList(CommandSourceStack source, SkillService skillService, PlayerRepository playerRepository) {
+    private static int executeList(CommandSourceStack source, Supplier<SkillService> skillServiceSupplier, Supplier<PlayerRepository> playerRepositorySupplier) {
+        SkillService skillService = skillServiceSupplier.get();
+        PlayerRepository playerRepository = playerRepositorySupplier.get();
+        if (skillService == null || playerRepository == null) {
+            source.sendFailure(Component.literal("Skill module is disabled."));
+            return 0;
+        }
         if (!(source.getEntity() instanceof ServerPlayer serverPlayer)) {
             source.sendFailure(Component.literal("Only players can list skills."));
             return 0;
@@ -65,7 +73,12 @@ public final class SkillCommands {
         return skills.size();
     }
 
-    private static int executeInfo(CommandSourceStack source, SkillService skillService, String skillId) {
+    private static int executeInfo(CommandSourceStack source, Supplier<SkillService> skillServiceSupplier, String skillId) {
+        SkillService skillService = skillServiceSupplier.get();
+        if (skillService == null) {
+            source.sendFailure(Component.literal("Skill module is disabled."));
+            return 0;
+        }
         Optional<SkillDefinition> def = skillService.getSkillDefinition(skillId);
         if (def.isEmpty()) {
             source.sendFailure(Component.literal("Unknown skill: " + skillId));
@@ -78,7 +91,12 @@ public final class SkillCommands {
         return 1;
     }
 
-    private static int executeGive(CommandSourceStack source, ServerPlayer target, SkillService skillService, String skillId, int count) {
+    private static int executeGive(CommandSourceStack source, ServerPlayer target, Supplier<SkillService> skillServiceSupplier, String skillId, int count) {
+        SkillService skillService = skillServiceSupplier.get();
+        if (skillService == null) {
+            source.sendFailure(Component.literal("Skill module is disabled."));
+            return 0;
+        }
         Optional<SkillDefinition> def = skillService.getSkillDefinition(skillId);
         if (def.isEmpty()) {
             source.sendFailure(Component.literal("Unknown skill: " + skillId));

@@ -4,13 +4,16 @@ import com.kiemhiep.api.model.SkillDefinition;
 import com.kiemhiep.api.platform.Location;
 import com.kiemhiep.api.platform.PlatformProvider;
 import com.kiemhiep.api.platform.PlayerAdapter;
+import com.kiemhiep.api.platform.EntityAdapter;
 import com.kiemhiep.api.platform.WorldAdapter;
 import com.kiemhiep.api.repository.SkillDefinitionRepository;
 import com.kiemhiep.api.skill.ISkill;
+import com.kiemhiep.api.skill.ManaProvider;
 import com.kiemhiep.api.skill.SkillContext;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,6 +28,7 @@ public final class SkillManager {
         ON_COOLDOWN,
         ALREADY_CASTING,
         INVALID_SKILL,
+        INSUFFICIENT_MANA,
         CAST_STARTED
     }
 
@@ -33,17 +37,20 @@ public final class SkillManager {
     private final CastStateManager castStateManager;
     private final EffectManager effectManager;
     private final PlatformProvider platformProvider;
+    private final Optional<ManaProvider> manaProvider;
 
     public SkillManager(SkillDefinitionRepository definitionRepository,
                         CooldownManager cooldownManager,
                         CastStateManager castStateManager,
                         EffectManager effectManager,
-                        PlatformProvider platformProvider) {
+                        PlatformProvider platformProvider,
+                        Optional<ManaProvider> manaProvider) {
         this.definitionRepository = definitionRepository;
         this.cooldownManager = cooldownManager;
         this.castStateManager = castStateManager;
         this.effectManager = effectManager;
         this.platformProvider = platformProvider;
+        this.manaProvider = Objects.requireNonNull(manaProvider, "manaProvider");
     }
 
     /**
@@ -66,6 +73,16 @@ public final class SkillManager {
             return UseResult.ALREADY_CASTING;
         }
 
+        int manaCost = definition.manaCost();
+        if (manaCost > 0 && manaProvider.isPresent()) {
+            if (manaProvider.get().getCurrentMana(casterId) < manaCost) {
+                return UseResult.INSUFFICIENT_MANA;
+            }
+            if (!manaProvider.get().consumeMana(casterId, manaCost)) {
+                return UseResult.INSUFFICIENT_MANA;
+            }
+        }
+
         if (definition.castTimeTicks() > 0) {
             long castEndTick = serverTick + definition.castTimeTicks();
             castStateManager.startCast(casterId, definition.skillId(), castEndTick, definition);
@@ -86,7 +103,7 @@ public final class SkillManager {
         PlayerAdapter caster = platformProvider.getPlayer(casterId).orElse(null);
         Location origin = caster != null ? caster.getLocation() : new Location("", 0, 0, 0);
         WorldAdapter world = caster != null ? caster.getWorld() : null;
-        List<?> targets = Collections.emptyList();
+        List<EntityAdapter> targets = Collections.<EntityAdapter>emptyList();
         if (world != null && definition.maxRadius() > 0) {
             targets = world.getEntitiesInRadius(origin, definition.maxRadius());
         }

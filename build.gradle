@@ -52,8 +52,10 @@ dependencies {
 	implementation "org.postgresql:postgresql:42.7.3"
 	implementation "io.lettuce:lettuce-core:6.2.6.RELEASE"
 
-	// Unit tests (JUnit 5)
+	// Unit tests (JUnit 5, Mockito)
 	testImplementation "org.junit.jupiter:junit-jupiter:5.10.2"
+	testImplementation "org.mockito:mockito-core:5.14.2"
+	testImplementation "org.mockito:mockito-junit-jupiter:5.14.2"
 	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 	testImplementation sourceSets.main.output
 	testImplementation "com.h2database:h2:2.2.224"

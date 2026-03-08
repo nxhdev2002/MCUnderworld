@@ -1,5 +1,6 @@
 package com.kiemhiep.core.skill;
 
+import com.kiemhiep.Kiemhiep;
 import com.kiemhiep.api.model.SkillDefinition;
 
 import java.util.UUID;
@@ -43,7 +44,11 @@ public final class CastStateManager {
     public void tick(long currentServerTick, CastCompletionHandler onComplete) {
         castByPlayer.entrySet().removeIf(e -> {
             if (e.getValue().castEndTick <= currentServerTick) {
-                onComplete.onCastComplete(e.getKey(), e.getValue());
+                try {
+                    onComplete.onCastComplete(e.getKey(), e.getValue());
+                } catch (Exception ex) {
+                    Kiemhiep.LOGGER.warn("Cast complete callback failed for playerId={} skillId={}", e.getKey(), e.getValue().skillId, ex);
+                }
                 return true;
             }
             return false;

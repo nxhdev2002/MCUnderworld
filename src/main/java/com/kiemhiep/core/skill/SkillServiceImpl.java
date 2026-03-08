@@ -10,12 +10,15 @@ import com.kiemhiep.core.skill.SkillManager.UseResult;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SkillServiceImpl implements SkillService {
 
     private final SkillDefinitionRepository definitionRepository;
     private final SkillRepository playerSkillRepository;
     private final SkillManager skillManager;
+    /** In-memory cache for getByItemId to reduce DB reads in hot path. */
+    private final ConcurrentHashMap<String, SkillDefinition> definitionByItemId = new ConcurrentHashMap<>();
 
     public SkillServiceImpl(SkillDefinitionRepository definitionRepository,
                             SkillRepository playerSkillRepository,
@@ -32,7 +35,11 @@ public class SkillServiceImpl implements SkillService {
 
     @Override
     public Optional<SkillDefinition> getByItemId(String itemId) {
-        return definitionRepository.getByItemId(itemId);
+        SkillDefinition cached = definitionByItemId.get(itemId);
+        if (cached != null) return Optional.of(cached);
+        Optional<SkillDefinition> fromDb = definitionRepository.getByItemId(itemId);
+        fromDb.ifPresent(d -> definitionByItemId.put(itemId, d));
+        return fromDb;
     }
 
     @Override
@@ -42,7 +49,7 @@ public class SkillServiceImpl implements SkillService {
 
     @Override
     public UseResult useSkill(UUID casterId, String itemId, long serverTick) {
-        Optional<SkillDefinition> def = definitionRepository.getByItemId(itemId);
+        Optional<SkillDefinition> def = getByItemId(itemId);
         if (def.isEmpty()) return UseResult.INVALID_SKILL;
         return skillManager.useSkill(casterId, def.get(), serverTick);
     }

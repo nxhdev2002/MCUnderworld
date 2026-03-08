@@ -66,7 +66,8 @@ public class SkillModule implements KiemHiepModule {
         cooldownManager = new CooldownManager();
         castStateManager = new CastStateManager();
         EffectManager effectManager = new EffectManager();
-        skillManagerHolder = new SkillManager(definitionRepository, cooldownManager, castStateManager, effectManager, ctx.getPlatformProvider());
+        InMemoryManaProvider manaProvider = new InMemoryManaProvider();
+        skillManagerHolder = new SkillManager(definitionRepository, cooldownManager, castStateManager, effectManager, ctx.getPlatformProvider(), Optional.of(manaProvider));
         skillServiceImpl = new SkillServiceImpl(definitionRepository, playerSkillRepo, skillManagerHolder);
         skillServiceHolder = skillServiceImpl;
 

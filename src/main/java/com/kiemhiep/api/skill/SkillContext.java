@@ -1,6 +1,7 @@
 package com.kiemhiep.api.skill;
 
 import com.kiemhiep.api.model.SkillDefinition;
+import com.kiemhiep.api.platform.EntityAdapter;
 import com.kiemhiep.api.platform.Location;
 import com.kiemhiep.api.platform.PlayerAdapter;
 
@@ -26,7 +27,7 @@ public interface SkillContext {
     Location getOrigin();
 
     /** Entities in radius (from WorldAdapter.getEntitiesInRadius), may be empty. */
-    List<?> getTargetsInRadius();
+    List<EntityAdapter> getTargetsInRadius();
 
     /** Current server tick when execution started. */
     long getServerTick();
