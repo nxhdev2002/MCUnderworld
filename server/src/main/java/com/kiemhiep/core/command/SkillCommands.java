@@ -3,7 +3,9 @@ package com.kiemhiep.core.command;
 import com.kiemhiep.api.model.Skill;
 import com.kiemhiep.api.model.SkillDefinition;
 import com.kiemhiep.api.repository.PlayerRepository;
+import com.kiemhiep.core.command.CommandPermissionHelper;
 import com.kiemhiep.api.service.SkillService;
+import com.kiemhiep.platform.SkillItemRegistrationHelper;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -13,7 +15,10 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -34,6 +39,9 @@ public final class SkillCommands {
         var skill = Commands.literal("skill")
             .then(Commands.literal("list")
                 .executes(ctx -> executeList(ctx.getSource(), skillServiceSupplier, playerRepositorySupplier)))
+            .then(Commands.literal("all")
+                .requires(source -> CommandPermissionHelper.hasPermissionLevel(source, 2))
+                .executes(ctx -> executeAll(ctx.getSource(), skillServiceSupplier)))
             .then(Commands.literal("info")
                 .then(Commands.argument("skillId", StringArgumentType.string())
                     .executes(ctx -> executeInfo(ctx.getSource(), skillServiceSupplier, StringArgumentType.getString(ctx, "skillId")))))
@@ -68,9 +76,31 @@ public final class SkillCommands {
             source.sendSuccess(() -> Component.literal("You have no skills learned."), false);
             return 0;
         }
-        String line = skills.stream().map(s -> s.skillId() + " (Lv." + s.level() + ")").reduce((a, b) -> a + ", " + b).orElse("");
-        source.sendSuccess(() -> Component.literal("Skills: " + line), false);
+        List<String> parts = new ArrayList<>(skills.size());
+        for (Skill s : skills) {
+            parts.add(s.skillId() + " (Lv." + s.level() + ")");
+        }
+        source.sendSuccess(() -> Component.literal("Skills: " + String.join(", ", parts)), false);
         return skills.size();
+    }
+
+    private static int executeAll(CommandSourceStack source, Supplier<SkillService> skillServiceSupplier) {
+        SkillService skillService = skillServiceSupplier.get();
+        if (skillService == null) {
+            source.sendFailure(Component.literal("Skill module is disabled."));
+            return 0;
+        }
+        List<SkillDefinition> all = skillService.getAllSkillDefinitions();
+        if (all.isEmpty()) {
+            source.sendSuccess(() -> Component.literal("No skills defined on the system."), false);
+            return 0;
+        }
+        List<String> parts = new ArrayList<>(all.size());
+        for (SkillDefinition d : all) {
+            parts.add(d.skillId() + " (" + d.name() + ", " + d.itemId() + ")");
+        }
+        source.sendSuccess(() -> Component.literal("Skills on system: " + String.join(", ", parts)), false);
+        return all.size();
     }
 
     private static int executeInfo(CommandSourceStack source, Supplier<SkillService> skillServiceSupplier, String skillId) {
@@ -102,8 +132,20 @@ public final class SkillCommands {
             source.sendFailure(Component.literal("Unknown skill: " + skillId));
             return 0;
         }
-        // Give item: resolve item from definition and add to target inventory (done in SkillModule with item registry)
-        source.sendSuccess(() -> Component.literal("Use /skill give via SkillModule item registry (give " + def.get().itemId() + " x" + count + ")"), false);
+        String itemId = def.get().itemId();
+        Optional<Item> itemOpt = SkillItemRegistrationHelper.getItemById(itemId);
+        if (itemOpt.isEmpty()) {
+            source.sendFailure(Component.literal("Skill item not registered: " + itemId));
+            return 0;
+        }
+        Item item = itemOpt.get();
+        ItemStack stack = new ItemStack(item, count);
+        if (!target.getInventory().add(stack)) {
+            target.drop(stack, false);
+            source.sendFailure(Component.literal("Target inventory is full. Dropped " + count + " x " + itemId + " on the ground."));
+            return 0;
+        }
+        source.sendSuccess(() -> Component.literal("Gave " + count + " x " + itemId + " to " + target.getName().getString() + "."), false);
         return 1;
     }
 }

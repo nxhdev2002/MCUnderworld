@@ -43,6 +43,11 @@ public class SkillServiceImpl implements SkillService {
     }
 
     @Override
+    public List<SkillDefinition> getAllSkillDefinitions() {
+        return definitionRepository.findAll();
+    }
+
+    @Override
     public List<Skill> getPlayerSkills(long playerId) {
         return playerSkillRepository.getByPlayerId(playerId);
     }
@@ -52,5 +57,10 @@ public class SkillServiceImpl implements SkillService {
         Optional<SkillDefinition> def = getByItemId(itemId);
         if (def.isEmpty()) return UseResult.INVALID_SKILL;
         return skillManager.useSkill(casterId, def.get(), serverTick);
+    }
+
+    @Override
+    public void clearDefinitionCache() {
+        definitionByItemId.clear();
     }
 }

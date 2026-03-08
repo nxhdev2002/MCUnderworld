@@ -9,14 +9,18 @@ import com.kiemhiep.api.service.SkillService;
 import com.kiemhiep.core.command.SkillCommands;
 import com.kiemhiep.core.database.JdbcPlayerRepository;
 import com.kiemhiep.core.database.JdbcSkillDefinitionRepository;
+import com.kiemhiep.api.model.SkillDefinition;
 import com.kiemhiep.core.skill.impl.FireballSkill;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import com.kiemhiep.platform.SkillItemRegistrationHelper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.ItemStack;
 
 import javax.sql.DataSource;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Skill module: skill = item, effect interfaces, SkillEngine, commands, UseItemCallback.
@@ -77,9 +81,24 @@ public class SkillModule implements KiemHiepModule {
     }
 
     private void registerSkillItems() {
-        // Item registration: requires ResourceLocation at runtime. Seed DB with item_id kiemhiep:skill_fireball;
-        // register the item in a dedicated content class or use data-driven registration.
-        Kiemhiep.LOGGER.info("Skill items: register via content class or data (item_id kiemhiep:skill_fireball)");
+        if (definitionRepository == null) return;
+        try {
+            List<SkillDefinition> all = definitionRepository.findAll();
+            Set<String> uniqueItemIds = all.stream()
+                .map(SkillDefinition::itemId)
+                .collect(Collectors.toSet());
+            for (String itemId : uniqueItemIds) {
+                if (itemId == null || !itemId.contains(":")) {
+                    Kiemhiep.LOGGER.warn("Skill item_id invalid (need namespace:path): {}", itemId);
+                    continue;
+                }
+                if (SkillItemRegistrationHelper.registerItem(itemId)) {
+                    Kiemhiep.LOGGER.info("Registered skill item: {}", itemId);
+                }
+            }
+        } catch (Exception e) {
+            Kiemhiep.LOGGER.warn("Skill items: could not load definitions for registration", e);
+        }
     }
 
     @Override
