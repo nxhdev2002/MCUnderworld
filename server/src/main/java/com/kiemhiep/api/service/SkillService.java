@@ -14,6 +14,9 @@ public interface SkillService {
 
     Optional<SkillDefinition> getByItemId(String itemId);
 
+    /** All skill definitions on the system (for admin /skill all). */
+    List<SkillDefinition> getAllSkillDefinitions();
+
     List<Skill> getPlayerSkills(long playerId);
 
     /**

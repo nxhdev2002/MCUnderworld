@@ -34,6 +34,8 @@ public final class SkillCommands {
         var skill = Commands.literal("skill")
             .then(Commands.literal("list")
                 .executes(ctx -> executeList(ctx.getSource(), skillServiceSupplier, playerRepositorySupplier)))
+            .then(Commands.literal("all")
+                .executes(ctx -> executeAll(ctx.getSource(), skillServiceSupplier)))
             .then(Commands.literal("info")
                 .then(Commands.argument("skillId", StringArgumentType.string())
                     .executes(ctx -> executeInfo(ctx.getSource(), skillServiceSupplier, StringArgumentType.getString(ctx, "skillId")))))
@@ -71,6 +73,25 @@ public final class SkillCommands {
         String line = skills.stream().map(s -> s.skillId() + " (Lv." + s.level() + ")").reduce((a, b) -> a + ", " + b).orElse("");
         source.sendSuccess(() -> Component.literal("Skills: " + line), false);
         return skills.size();
+    }
+
+    private static int executeAll(CommandSourceStack source, Supplier<SkillService> skillServiceSupplier) {
+        SkillService skillService = skillServiceSupplier.get();
+        if (skillService == null) {
+            source.sendFailure(Component.literal("Skill module is disabled."));
+            return 0;
+        }
+        List<SkillDefinition> all = skillService.getAllSkillDefinitions();
+        if (all.isEmpty()) {
+            source.sendSuccess(() -> Component.literal("No skills defined on the system."), false);
+            return 0;
+        }
+        String line = all.stream()
+            .map(d -> d.skillId() + " (" + d.name() + ", " + d.itemId() + ")")
+            .reduce((a, b) -> a + ", " + b)
+            .orElse("");
+        source.sendSuccess(() -> Component.literal("Skills on system: " + line), false);
+        return all.size();
     }
 
     private static int executeInfo(CommandSourceStack source, Supplier<SkillService> skillServiceSupplier, String skillId) {

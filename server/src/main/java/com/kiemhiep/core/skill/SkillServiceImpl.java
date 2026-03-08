@@ -43,6 +43,11 @@ public class SkillServiceImpl implements SkillService {
     }
 
     @Override
+    public List<SkillDefinition> getAllSkillDefinitions() {
+        return definitionRepository.findAll();
+    }
+
+    @Override
     public List<Skill> getPlayerSkills(long playerId) {
         return playerSkillRepository.getByPlayerId(playerId);
     }
