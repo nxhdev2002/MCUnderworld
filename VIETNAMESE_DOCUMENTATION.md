@@ -928,11 +928,11 @@ public class SqlMyRepository implements MyRepository {
 ### Build và Test
 
 ```bash
-# Build Fabric mod
-./gradlew :kiemhiep-fabric:build
+# Build server mod (Fabric)
+./gradlew :server:build
 
-# Build Paper plugin (kiemhiep-core)
-./gradlew :kiemhiep-core:build
+# Build client mod (Fabric)
+./gradlew :client:build
 
 # Run tests
 ./gradlew test
@@ -940,6 +940,15 @@ public class SqlMyRepository implements MyRepository {
 # Clean build
 ./gradlew clean build
 ```
+
+### Cài đặt Client (Fabric) — tránh lỗi "mod không khớp"
+
+Khi chơi với server KiemHiep (Fabric), client cần:
+
+1. **Build client**: `./gradlew :client:build` → JAR nằm ở `client/build/libs/kiemhiep-client-1.0.0.jar`.
+2. **Copy JAR** vào thư mục `mods` của Minecraft (Fabric installer, hoặc profile Fabric 1.21.11).
+3. **Cài Fabric API đúng phiên bản**: phải dùng **cùng phiên bản với server** là `0.141.3+1.21.11` (Minecraft 1.21.11). Nếu cài Fabric API khác version (vd. bản mới hơn hoặc cũ hơn), sẽ báo **"mod không khớp giữa client và server"**.
+   - Tải Fabric API 0.141.3+1.21.11 từ [Modrinth](https://modrinth.com/mod/fabric-api/versions?g=1.21.11) hoặc [Fabric MC](https://fabricmc.net/develop/), chọn đúng bản cho 1.21.11.
 
 ---
 
