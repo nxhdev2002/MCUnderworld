@@ -6,14 +6,14 @@
 
 ## Sub-tasks
 
-- [ ] **(1)** Models (Cultivation, CultivationRealm) + interface CultivationService trong api (api/service, api/model hoặc tương đương)
-- [ ] **(2)** CultivationRepository (interface đã có ở data) + migration bảng cultivation nếu chưa có
-- [ ] **(3)** CultivationServiceImpl: 10 realm, 9 sub-level mỗi realm, addExp, setSubLevel, breakthrough; getExpRequired(realmLevel)
-- [ ] **(4)** CultivationModule: implement KiemHiepModule; onLoad bind CultivationService, onEnable đăng ký listener + command
-- [ ] **(5)** Listener: player join → load cultivation (get hoặc tạo mặc định), cache/Redis nếu dùng
-- [ ] **(6)** Commands: xem info tu luyện, addExp (admin), breakthrough (player)
-- [ ] **(7)** Events: CultivationSubLevelUpEvent, CultivationBreakthroughEvent — fire trong service, đăng ký trong module nếu cần
-- [ ] **(8)** Build + unit test: `./gradlew build`, viết unit test, `./gradlew test`
+- [x] **(1)** Models (Cultivation, CultivationRealm) + interface CultivationService trong api (api/service, api/model hoặc tương đương)
+- [x] **(2)** CultivationRepository (interface đã có ở data) + migration bảng cultivation nếu chưa có
+- [x] **(3)** CultivationServiceImpl: 10 realm, 9 sub-level mỗi realm, addExp, setSubLevel, breakthrough; getExpRequired(realmLevel)
+- [x] **(4)** CultivationModule: implement KiemHiepModule; onLoad bind CultivationService, onEnable đăng ký listener + command
+- [x] **(5)** Listener: player join → load cultivation (get hoặc tạo mặc định), cache/Redis nếu dùng
+- [x] **(6)** Commands: xem info tu luyện, addExp (admin), breakthrough (player)
+- [x] **(7)** Events: CultivationSubLevelUpEvent, CultivationBreakthroughEvent — fire trong service, đăng ký trong module nếu cần
+- [x] **(8)** Build + unit test: `./gradlew build`, viết unit test, `./gradlew test`
 
 ## Ghi chú
 
