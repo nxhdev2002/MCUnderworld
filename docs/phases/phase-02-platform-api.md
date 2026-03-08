@@ -6,13 +6,13 @@
 
 ## Sub-tasks
 
-- [ ] **(1)** EventDispatcher + event classes (api/event) — fire, register, unregister
-- [ ] **(2)** api.platform: interfaces `PlatformProvider`, `PlayerAdapter`, `WorldAdapter`, `EntityAdapter`, `Location` (hoặc record)
-- [ ] **(3)** Fabric adapters: FabricPlatformProvider, FabricPlayerAdapter, FabricWorldAdapter, FabricEntityAdapter, FabricLocationAdapter (platform/)
-- [ ] **(4)** WorldAdapter: API `getEntitiesInBox(origin, radius)` / getEntitiesInRadius — không scan cả world (Rule 4)
-- [ ] **(5)** EntityLimitEnforcer + config `config/kiemhiep/limits.json` (Mob 1000, Projectile 1000, NPC 500, …) (core/limit)
-- [ ] **(6)** TPSMonitor (optional): đọc tick time/TPS, ghi vào biến hoặc callback cho server_metrics (core/monitor)
-- [ ] **(7)** Build + unit test: `./gradlew build`, viết unit test, `./gradlew test`
+- [x] **(1)** EventDispatcher + event classes (api/event) — fire, register, unregister
+- [x] **(2)** api.platform: interfaces `PlatformProvider`, `PlayerAdapter`, `WorldAdapter`, `EntityAdapter`, `Location` (hoặc record)
+- [x] **(3)** Fabric adapters: FabricPlatformProvider, FabricPlayerAdapter, FabricWorldAdapter, FabricEntityAdapter, FabricLocationAdapter (platform/)
+- [x] **(4)** WorldAdapter: API `getEntitiesInBox(origin, radius)` / getEntitiesInRadius — không scan cả world (Rule 4)
+- [x] **(5)** EntityLimitEnforcer + config `config/kiemhiep/limits.json` (Mob 1000, Projectile 1000, NPC 500, …) (core/limit)
+- [x] **(6)** TPSMonitor (optional): đọc tick time/TPS, ghi vào biến hoặc callback cho server_metrics (core/monitor)
+- [x] **(7)** Build + unit test: `./gradlew build`, viết unit test, `./gradlew test`
 
 ## Ghi chú
 

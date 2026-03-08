@@ -24,6 +24,7 @@ import com.kiemhiep.core.limit.EntityLimitEnforcer;
 import com.kiemhiep.core.module.ModuleContextImpl;
 import com.kiemhiep.core.module.ModuleLoader;
 import com.kiemhiep.core.module.ModuleRegistryImpl;
+import com.kiemhiep.core.skill.SkillModule;
 import com.kiemhiep.core.monitor.TPSMonitor;
 import com.kiemhiep.platform.FabricPlatformProvider;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -96,6 +97,7 @@ public final class KiemhiepBootstrap {
         }
 
         registry = new ModuleRegistryImpl(configLoader);
+        registry.register(new SkillModule());
         ModuleConfigLoaderImpl moduleConfigLoader = new ModuleConfigLoaderImpl(configLoader);
         ModuleLoader.ModuleContextFactory contextFactory = moduleId ->
             new ModuleContextImpl(moduleId, registry, moduleConfigLoader, eventDispatcher, platformProvider);
