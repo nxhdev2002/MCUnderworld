@@ -24,24 +24,24 @@ public final class SkillEffectReceiver {
             double y = payload.y();
             double z = payload.z();
             String effectType = payload.effectType();
-            LOGGER.info("Skill effect received: skillId={} effectType={} at ({}, {}, {})", payload.skillId(), effectType, x, y, z);
-            LOGGER.info("Skill effect: scheduling spawn on client thread");
+            LOGGER.debug("Skill effect received: skillId={} effectType={} at ({}, {}, {})", payload.skillId(), effectType, x, y, z);
+            LOGGER.debug("Skill effect: scheduling spawn on client thread");
             context.client().execute(() -> {
                 Level world = context.client().level;
-                LOGGER.info("Skill effect execute: level={} thread={}", world != null ? "non-null" : "NULL", Thread.currentThread().getName());
+                LOGGER.debug("Skill effect execute: level={} thread={}", world != null ? "non-null" : "NULL", Thread.currentThread().getName());
                 if (world == null) {
                     LOGGER.warn("Skill effect: level null when spawning particles, aborting");
                     return;
                 }
-                LOGGER.info("Skill effect: calling spawnParticles effectType={} at ({}, {}, {})", effectType, x, y, z);
+                LOGGER.debug("Skill effect: calling spawnParticles effectType={} at ({}, {}, {})", effectType, x, y, z);
                 spawnParticles(world, x, y, z, effectType);
-                LOGGER.info("Skill effect: spawnParticles returned");
+                LOGGER.debug("Skill effect: spawnParticles returned");
             });
         });
     }
 
     private static void spawnParticles(Level world, double x, double y, double z, String effectType) {
-        LOGGER.info("Skill effect spawnParticles: effectType={} worldClass={}", effectType, world.getClass().getName());
+        LOGGER.debug("Skill effect spawnParticles: effectType={} worldClass={}", effectType, world.getClass().getName());
         switch (effectType) {
             case "thunder" -> spawnThunderParticles(world, x, y, z);
             case "tornado" -> spawnTornadoParticles(world, x, y, z);
@@ -61,16 +61,32 @@ public final class SkillEffectReceiver {
         }
     }
 
+    /**
+     * Thunder: tia sấm sét đánh xuống (ELECTRIC_SPARK từ trên xuống) + nổ tại điểm chạm (EXPLOSION + khói/lửa).
+     */
     private static void spawnThunderParticles(Level world, double x, double y, double z) {
-        LOGGER.info("Skill effect spawnThunderParticles: start at ({}, {}, {})", x, y, z);
-        for (int i = 0; i < 40; i++) {
-            double ox = (world.random.nextDouble() - 0.5) * 2.5;
-            double oz = (world.random.nextDouble() - 0.5) * 2.5;
-            addParticle(world, ParticleTypes.FLAME, x + ox, y + 0.5, z + oz, 0, 0.25, 0);
-            addParticle(world, ParticleTypes.SMOKE, x + ox, y + 0.8, z + oz, 0, 0.2, 0);
-            addParticle(world, ParticleTypes.LARGE_SMOKE, x + ox * 0.8, y + 0.3, z + oz * 0.8, 0, 0.15, 0);
+        LOGGER.debug("Skill effect spawnThunderParticles: start at ({}, {}, {})", x, y, z);
+        double height = 10.0;
+        int lightningSteps = 12;
+        for (int i = 0; i <= lightningSteps; i++) {
+            double progress = (double) i / lightningSteps;
+            double py = y + height * (1.0 - progress);
+            double jitter = 0.15 * (1.0 - progress);
+            double px = x + (world.random.nextDouble() - 0.5) * jitter;
+            double pz = z + (world.random.nextDouble() - 0.5) * jitter;
+            addParticle(world, ParticleTypes.ELECTRIC_SPARK, px, py, pz, 0, -0.5, 0);
+            addParticle(world, ParticleTypes.SMOKE, px, py, pz, 0, -0.2, 0);
         }
-        LOGGER.info("Skill effect spawnThunderParticles: done (120 particles)");
+        addParticle(world, ParticleTypes.EXPLOSION_EMITTER, x, y + 0.5, z, 0, 0, 0);
+        addParticle(world, ParticleTypes.EXPLOSION, x, y + 0.5, z, 0, 0, 0);
+        for (int i = 0; i < 30; i++) {
+            double ox = (world.random.nextDouble() - 0.5) * 3.0;
+            double oz = (world.random.nextDouble() - 0.5) * 3.0;
+            addParticle(world, ParticleTypes.LARGE_SMOKE, x + ox, y + 0.5, z + oz, 0, 0.2, 0);
+            addParticle(world, ParticleTypes.FLAME, x + ox * 0.8, y + 0.3, z + oz * 0.8, 0, 0.25, 0);
+            addParticle(world, ParticleTypes.SMOKE, x + ox, y + 0.8, z + oz, 0, 0.15, 0);
+        }
+        LOGGER.debug("Skill effect spawnThunderParticles: done");
     }
 
     private static void spawnTornadoParticles(Level world, double x, double y, double z) {

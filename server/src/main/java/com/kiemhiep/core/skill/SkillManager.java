@@ -91,7 +91,7 @@ public final class SkillManager {
         if (definition.castTimeTicks() > 0) {
             long castEndTick = serverTick + definition.castTimeTicks();
             castStateManager.startCast(casterId, definition.skillId(), castEndTick, definition);
-            Kiemhiep.LOGGER.info("Skill cast started: casterId={} skillId={} castTimeTicks={}", casterId, definition.skillId(), definition.castTimeTicks());
+            Kiemhiep.LOGGER.debug("Skill cast started: casterId={} skillId={} castTimeTicks={}", casterId, definition.skillId(), definition.castTimeTicks());
             return UseResult.CAST_STARTED;
         }
 
@@ -102,7 +102,7 @@ public final class SkillManager {
     public void onCastComplete(UUID casterId, CastStateManager.CastEntry entry) {
         Optional<ISkill> skillOpt = SkillRegistry.get(entry.definition.behaviorId());
         if (skillOpt.isEmpty()) return;
-        Kiemhiep.LOGGER.info("Skill cast complete, executing: casterId={} skillId={}", casterId, entry.definition.skillId());
+        Kiemhiep.LOGGER.debug("Skill cast complete, executing: casterId={} skillId={}", casterId, entry.definition.skillId());
         doExecute(casterId, entry.definition, skillOpt.get(), entry.castEndTick);
     }
 
@@ -114,7 +114,7 @@ public final class SkillManager {
         if (world != null && definition.maxRadius() > 0) {
             targets = world.getEntitiesInRadius(origin, definition.maxRadius());
         }
-        Kiemhiep.LOGGER.info("Skill executed: casterId={} skillId={} behaviorId={} targets={}", casterId, definition.skillId(), definition.behaviorId(), targets.size());
+        Kiemhiep.LOGGER.debug("Skill executed: casterId={} skillId={} behaviorId={} targets={}", casterId, definition.skillId(), definition.behaviorId(), targets.size());
         SkillContext ctx = new SkillContextImpl(casterId, caster, definition, origin, targets, serverTick, effectManager);
         skill.execute(ctx);
 

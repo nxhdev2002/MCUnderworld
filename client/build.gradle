@@ -30,6 +30,7 @@ dependencies {
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	implementation project(':common')
 }
 
 processResources {
@@ -49,6 +50,13 @@ java {
 }
 
 jar {
+	// Include common classes (e.g. MeteorEntity) so client JAR has them at runtime
+	dependsOn ':common:classes'
+	from(project(':common').file("build/classes/java/main"))
+	from(project(':common').file("build/resources/main")) {
+		exclude 'fabric.mod.json'
+		duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	}
 	from(rootProject.file("LICENSE")) {
 		rename { "${it}_${project.base.archivesName.get()}" }
 	}

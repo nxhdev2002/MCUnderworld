@@ -11,6 +11,7 @@ import com.kiemhiep.core.database.JdbcPlayerRepository;
 import com.kiemhiep.core.database.JdbcSkillDefinitionRepository;
 import com.kiemhiep.api.model.SkillDefinition;
 import com.kiemhiep.core.skill.impl.FireballSkill;
+import com.kiemhiep.core.skill.impl.ThunderSkill;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import com.kiemhiep.cultivation.CultivationModule;
@@ -92,6 +93,7 @@ public class SkillModule implements KiemHiepModule {
         skillServiceHolder = skillServiceImpl;
 
         SkillRegistry.register("FIREBALL", FireballSkill.INSTANCE);
+        SkillRegistry.register("THUNDER", ThunderSkill.INSTANCE);
 
         SkillNetworking.register();
         registerSkillItems();
@@ -138,11 +140,11 @@ public class SkillModule implements KiemHiepModule {
                 skillServiceOpt.get().getByItemId(itemId).ifPresent(def -> {
                     if (def.consumable()) stack.shrink(1);
                 });
-                Kiemhiep.LOGGER.info("Skill use success: player={} itemId={} result={}", player.getName().getString(), itemId, result);
+                Kiemhiep.LOGGER.debug("Skill use success: player={} itemId={} result={}", player.getName().getString(), itemId, result);
                 return InteractionResult.SUCCESS;
             }
             if (result == SkillManager.UseResult.CAST_STARTED) {
-                Kiemhiep.LOGGER.info("Skill cast started (use item): player={} itemId={}", player.getName().getString(), itemId);
+                Kiemhiep.LOGGER.debug("Skill cast started (use item): player={} itemId={}", player.getName().getString(), itemId);
                 return InteractionResult.SUCCESS;
             }
             if (result != SkillManager.UseResult.SUCCESS && result != SkillManager.UseResult.CAST_STARTED) {
@@ -160,6 +162,11 @@ public class SkillModule implements KiemHiepModule {
 
     private static final int DEFAULT_MAX_MANA = 100;
 
+    /**
+     * Registers a listener that sends {@link PlayerStatsPayload} (level, mana) to the client when a player joins.
+     * Stats are sent only on join; the HUD does not update during the session (e.g. after level up or mana use)
+     * until the player reconnects.
+     */
     private void registerPlayerStatsSync(ModuleContext ctx) {
         if (manaProvider == null) return;
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {

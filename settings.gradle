@@ -10,4 +10,4 @@ pluginManagement {
 }
 
 rootProject.name = 'kiemhiep'
-include 'server', 'client'
+include 'common', 'server', 'client'
