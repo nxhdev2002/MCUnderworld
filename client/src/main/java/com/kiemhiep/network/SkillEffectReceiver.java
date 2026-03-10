@@ -1,5 +1,6 @@
 package com.kiemhiep.network;
 
+import com.kiemhiep.effect.SkySplitEffect;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -111,6 +112,9 @@ public final class SkillEffectReceiver {
 
     /** Thiên thạch từ trên trời rơi xuống mục tiêu (x, y, z): trail từ cao rơi xuống + nổ tại điểm chạm. */
     private static void spawnMeteorParticles(Level world, double x, double y, double z) {
+        // Kích hoạt hiệu ứng sky split
+        SkySplitEffect.activate(x, y, z);
+
         double height = 12.0;
         int trails = 5;
         int particlesPerTrail = 8;

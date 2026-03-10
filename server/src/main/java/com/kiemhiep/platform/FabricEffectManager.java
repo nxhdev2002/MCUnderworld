@@ -3,6 +3,7 @@ package com.kiemhiep.platform;
 import com.kiemhiep.Kiemhiep;
 import com.kiemhiep.api.platform.Location;
 import com.kiemhiep.core.skill.EffectManager;
+import com.kiemhiep.platform.network.SkillCooldownPayload;
 import com.kiemhiep.platform.network.SkillEffectPayload;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -49,6 +50,21 @@ public class FabricEffectManager extends EffectManager {
                 Kiemhiep.LOGGER.debug("Skill effect sent S2C: skillId={} effectType={} at ({}, {}, {}) playersInRange={}", skillId, effectType, location.x(), location.y(), location.z(), playersInRange.size());
             } else {
                 Kiemhiep.LOGGER.warn("Skill effect not sent: caster adapter is not FabricPlayerAdapter");
+            }
+        });
+    }
+
+    @Override
+    public void sendSkillCooldownToClient(UUID playerId, String skillId, long cooldownEndTimeMillis) {
+        platformProvider.getPlayer(playerId).ifPresent(adapter -> {
+            if (adapter instanceof FabricPlayerAdapter fabricAdapter) {
+                ServerPlayer player = fabricAdapter.getServerPlayer();
+                if (player == null) return;
+                SkillCooldownPayload payload = new SkillCooldownPayload(skillId, cooldownEndTimeMillis);
+                ServerPlayNetworking.send(player, payload);
+                Kiemhiep.LOGGER.debug("Skill cooldown sent S2C: skillId={} cooldownEnd={}", skillId, cooldownEndTimeMillis);
+            } else {
+                Kiemhiep.LOGGER.warn("Skill cooldown not sent: player adapter is not FabricPlayerAdapter");
             }
         });
     }

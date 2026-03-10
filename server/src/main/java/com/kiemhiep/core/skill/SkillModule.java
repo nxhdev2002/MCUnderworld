@@ -19,6 +19,7 @@ import com.kiemhiep.platform.FabricEffectManager;
 import com.kiemhiep.platform.FabricPlatformProvider;
 import com.kiemhiep.platform.SkillItemRegistrationHelper;
 import com.kiemhiep.platform.network.PlayerStatsPayload;
+import com.kiemhiep.platform.network.SkillDefinitionsPayload;
 import com.kiemhiep.platform.network.SkillNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -96,6 +97,8 @@ public class SkillModule implements KiemHiepModule {
         SkillRegistry.register("THUNDER", ThunderSkill.INSTANCE);
 
         SkillNetworking.register();
+        // Set repository reference for skill definitions payload
+        com.kiemhiep.platform.network.SkillDefinitionsPayload.setRepository(definitionRepository);
         registerSkillItems();
     }
 
@@ -182,6 +185,10 @@ public class SkillModule implements KiemHiepModule {
             int currentMana = manaProvider.getCurrentMana(serverPlayer.getUUID());
             var payload = new PlayerStatsPayload(level, currentMana, DEFAULT_MAX_MANA);
             ServerPlayNetworking.send(serverPlayer, payload);
+
+            // Send skill definitions for tooltip
+            var skillDefsPayload = SkillDefinitionsPayload.create();
+            ServerPlayNetworking.send(serverPlayer, skillDefsPayload);
         });
     }
 

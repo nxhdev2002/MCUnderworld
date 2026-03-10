@@ -22,6 +22,11 @@ public class EffectManager implements IEffectRunner {
         // No-op; SkillModule networking will send payload
     }
 
+    /** Notify client of skill cooldown (S2C). */
+    public void sendSkillCooldownToClient(UUID playerId, String skillId, long cooldownEndTimeMillis) {
+        // No-op; platform/Fabric impl sends payload
+    }
+
     /** Called from skill effect interfaces (e.g. IThunder default) to play effect. */
     public void playEffect(SkillContext ctx, String effectType) {
         sendSkillEffectToClient(ctx.getCasterId(), ctx.getDefinition().skillId(), effectType, ctx.getOrigin());

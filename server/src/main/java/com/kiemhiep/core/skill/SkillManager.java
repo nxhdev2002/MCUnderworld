@@ -120,6 +120,7 @@ public final class SkillManager {
 
         long cooldownEndMillis = System.currentTimeMillis() + definition.cooldownTicks() * 50L;
         cooldownManager.setCooldown(casterId, definition.skillId(), cooldownEndMillis);
+        effectManager.sendSkillCooldownToClient(casterId, definition.skillId(), cooldownEndMillis);
         return UseResult.SUCCESS;
     }
 

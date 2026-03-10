@@ -18,5 +18,6 @@ public final class SkillNetworking {
     public static void register() {
         PayloadTypeRegistry.playS2C().register(SkillEffectPayload.TYPE, SkillEffectPayload.STREAM_CODEC);
         PayloadTypeRegistry.playS2C().register(PlayerStatsPayload.TYPE, PlayerStatsPayload.STREAM_CODEC);
+        PayloadTypeRegistry.playS2C().register(SkillDefinitionsPayload.TYPE, SkillDefinitionsPayload.STREAM_CODEC);
     }
 }
