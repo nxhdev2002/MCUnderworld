@@ -22,7 +22,7 @@ public class JdbcSkillDefinitionRepository implements SkillDefinitionRepository 
     public Optional<SkillDefinition> getById(long id) {
         String sql = "SELECT id, skill_id, behavior_id, item_id, name, mana_cost, cooldown_ticks, max_radius, " +
             "is_aoe, is_melee, skill_type, cast_time_ticks, cast_cancellable, consumable, parent_skill_id, " +
-            "evolution_level, created_at, updated_at FROM kiemhiep_skill_definitions WHERE id = ?";
+            "evolution_level, level, created_at, updated_at FROM kiemhiep_skill_definitions WHERE id = ?";
         try (Connection c = dataSource.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -37,7 +37,7 @@ public class JdbcSkillDefinitionRepository implements SkillDefinitionRepository 
     public Optional<SkillDefinition> getBySkillId(String skillId) {
         String sql = "SELECT id, skill_id, behavior_id, item_id, name, mana_cost, cooldown_ticks, max_radius, " +
             "is_aoe, is_melee, skill_type, cast_time_ticks, cast_cancellable, consumable, parent_skill_id, " +
-            "evolution_level, created_at, updated_at FROM kiemhiep_skill_definitions WHERE skill_id = ?";
+            "evolution_level, level, created_at, updated_at FROM kiemhiep_skill_definitions WHERE skill_id = ?";
         try (Connection c = dataSource.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, skillId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -52,7 +52,7 @@ public class JdbcSkillDefinitionRepository implements SkillDefinitionRepository 
     public Optional<SkillDefinition> getByItemId(String itemId) {
         String sql = "SELECT id, skill_id, behavior_id, item_id, name, mana_cost, cooldown_ticks, max_radius, " +
             "is_aoe, is_melee, skill_type, cast_time_ticks, cast_cancellable, consumable, parent_skill_id, " +
-            "evolution_level, created_at, updated_at FROM kiemhiep_skill_definitions WHERE item_id = ?";
+            "evolution_level, level, created_at, updated_at FROM kiemhiep_skill_definitions WHERE item_id = ?";
         try (Connection c = dataSource.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, itemId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -67,7 +67,7 @@ public class JdbcSkillDefinitionRepository implements SkillDefinitionRepository 
     public List<SkillDefinition> findAll() {
         String sql = "SELECT id, skill_id, behavior_id, item_id, name, mana_cost, cooldown_ticks, max_radius, " +
             "is_aoe, is_melee, skill_type, cast_time_ticks, cast_cancellable, consumable, parent_skill_id, " +
-            "evolution_level, created_at, updated_at FROM kiemhiep_skill_definitions ORDER BY id";
+            "evolution_level, level, created_at, updated_at FROM kiemhiep_skill_definitions ORDER BY id";
         List<SkillDefinition> list = new ArrayList<>();
         try (Connection c = dataSource.getConnection();
              Statement s = c.createStatement();
@@ -88,20 +88,35 @@ public class JdbcSkillDefinitionRepository implements SkillDefinitionRepository 
     private SkillDefinition insert(SkillDefinition d) {
         String sql = "INSERT INTO kiemhiep_skill_definitions (skill_id, behavior_id, item_id, name, mana_cost, " +
             "cooldown_ticks, max_radius, is_aoe, is_melee, skill_type, cast_time_ticks, cast_cancellable, consumable, " +
-            "parent_skill_id, evolution_level, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            "parent_skill_id, evolution_level, level, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         Instant now = Instant.now();
         try (Connection c = dataSource.getConnection();
              PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            setParams(ps, d, now);
-            ps.setObject(16, now);
+            ps.setString(1, d.skillId());
+            ps.setString(2, d.behaviorId());
+            ps.setString(3, d.itemId());
+            ps.setString(4, d.name());
+            ps.setInt(5, d.manaCost());
+            ps.setInt(6, d.cooldownTicks());
+            ps.setDouble(7, d.maxRadius());
+            ps.setBoolean(8, d.isAoe());
+            ps.setBoolean(9, d.isMelee());
+            ps.setString(10, d.skillType());
+            ps.setInt(11, d.castTimeTicks());
+            ps.setBoolean(12, d.castCancellable());
+            ps.setBoolean(13, d.consumable());
+            ps.setString(14, d.parentSkillId());
+            ps.setInt(15, d.evolutionLevel());
+            ps.setInt(16, d.level());
             ps.setObject(17, now);
+            ps.setObject(18, now);
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
                     long id = keys.getLong(1);
                     return new SkillDefinition(id, d.skillId(), d.behaviorId(), d.itemId(), d.name(), d.manaCost(),
                         d.cooldownTicks(), d.maxRadius(), d.isAoe(), d.isMelee(), d.skillType(), d.castTimeTicks(),
-                        d.castCancellable(), d.consumable(), d.parentSkillId(), d.evolutionLevel(), now, now);
+                        d.castCancellable(), d.consumable(), d.elementalType(), d.parentSkillId(), d.evolutionLevel(), d.level(), now, now);
                 }
             }
             throw new RuntimeException("Insert failed, no generated key");
@@ -113,47 +128,34 @@ public class JdbcSkillDefinitionRepository implements SkillDefinitionRepository 
     private SkillDefinition update(SkillDefinition d) {
         String sql = "UPDATE kiemhiep_skill_definitions SET skill_id=?, behavior_id=?, item_id=?, name=?, mana_cost=?, " +
             "cooldown_ticks=?, max_radius=?, is_aoe=?, is_melee=?, skill_type=?, cast_time_ticks=?, cast_cancellable=?, " +
-            "consumable=?, parent_skill_id=?, evolution_level=?, updated_at=? WHERE id=?";
+            "consumable=?, elemental_type=?, parent_skill_id=?, evolution_level=?, level=?, updated_at=? WHERE id=?";
         Instant now = Instant.now();
         try (Connection c = dataSource.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
-            setParams(ps, d, now);
-            ps.setObject(16, now);
-            ps.setLong(17, d.id());
+            ps.setString(1, d.skillId());
+            ps.setString(2, d.behaviorId());
+            ps.setString(3, d.itemId());
+            ps.setString(4, d.name());
+            ps.setInt(5, d.manaCost());
+            ps.setInt(6, d.cooldownTicks());
+            ps.setDouble(7, d.maxRadius());
+            ps.setBoolean(8, d.isAoe());
+            ps.setBoolean(9, d.isMelee());
+            ps.setString(10, d.skillType());
+            ps.setInt(11, d.castTimeTicks());
+            ps.setBoolean(12, d.castCancellable());
+            ps.setBoolean(13, d.consumable());
+            ps.setString(14, d.elementalType());
+            ps.setString(15, d.parentSkillId());
+            ps.setInt(16, d.evolutionLevel());
+            ps.setInt(17, d.level());
+            ps.setObject(18, now);
+            ps.setLong(19, d.id());
             ps.executeUpdate();
             return new SkillDefinition(d.id(), d.skillId(), d.behaviorId(), d.itemId(), d.name(), d.manaCost(),
                 d.cooldownTicks(), d.maxRadius(), d.isAoe(), d.isMelee(), d.skillType(), d.castTimeTicks(),
-                d.castCancellable(), d.consumable(), d.parentSkillId(), d.evolutionLevel(), d.createdAt(), now);
+                d.castCancellable(), d.consumable(), d.elementalType(), d.parentSkillId(), d.evolutionLevel(), d.level(), d.createdAt(), now);
         } catch (SQLException e) {
             throw new RuntimeException("Failed to update skill definition: " + d.id(), e);
-        }
-    }
-
-    private void setParams(PreparedStatement ps, SkillDefinition d, Instant now) throws SQLException {
-        ps.setString(1, d.skillId());
-        ps.setString(2, d.behaviorId());
-        ps.setString(3, d.itemId());
-        ps.setString(4, d.name());
-        ps.setInt(5, d.manaCost());
-        ps.setInt(6, d.cooldownTicks());
-        ps.setDouble(7, d.maxRadius());
-        ps.setBoolean(8, d.isAoe());
-        ps.setBoolean(9, d.isMelee());
-        ps.setString(10, d.skillType());
-        ps.setInt(11, d.castTimeTicks());
-        ps.setBoolean(12, d.castCancellable());
-        ps.setBoolean(13, d.consumable());
-        ps.setString(14, d.parentSkillId());
-        ps.setInt(15, d.evolutionLevel());
-    }
-
-    @Override
-    public void deleteById(long id) {
-        try (Connection c = dataSource.getConnection();
-             PreparedStatement ps = c.prepareStatement("DELETE FROM kiemhiep_skill_definitions WHERE id = ?")) {
-            ps.setLong(1, id);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to delete skill definition: " + id, e);
         }
     }
 
@@ -173,10 +175,23 @@ public class JdbcSkillDefinitionRepository implements SkillDefinitionRepository 
             rs.getInt("cast_time_ticks"),
             rs.getBoolean("cast_cancellable"),
             rs.getBoolean("consumable"),
+            rs.getString("elemental_type"),
             rs.getString("parent_skill_id"),
             rs.getInt("evolution_level"),
+            rs.getInt("level"),
             JdbcPlayerRepository.timestampToInstant(rs.getTimestamp("created_at")),
             JdbcPlayerRepository.timestampToInstant(rs.getTimestamp("updated_at"))
         );
+    }
+
+    @Override
+    public void deleteById(long id) {
+        try (Connection c = dataSource.getConnection();
+             PreparedStatement ps = c.prepareStatement("DELETE FROM kiemhiep_skill_definitions WHERE id = ?")) {
+            ps.setLong(1, id);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to delete skill definition: " + id, e);
+        }
     }
 }

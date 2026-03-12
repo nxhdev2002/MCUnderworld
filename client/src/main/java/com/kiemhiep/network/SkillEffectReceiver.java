@@ -4,6 +4,7 @@ import com.kiemhiep.effect.SkySplitEffect;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
@@ -48,12 +49,18 @@ public final class SkillEffectReceiver {
             case "tornado" -> spawnTornadoParticles(world, x, y, z);
             case "tsunami" -> spawnTsunamiParticles(world, x, y, z);
             case "meteor" -> spawnMeteorParticles(world, x, y, z);
+            case "fire" -> spawnFireParticles(world, x, y, z);
+            case "ice" -> spawnIceParticles(world, x, y, z);
+            case "lightning" -> spawnLightningParticles(world, x, y, z);
+            case "earth" -> spawnEarthParticles(world, x, y, z);
+            case "wind" -> spawnWindParticles(world, x, y, z);
+            case "poison" -> spawnPoisonParticles(world, x, y, z);
             default -> spawnGenericParticles(world, x, y, z);
         }
     }
 
     /** Spawn particle; use addAlwaysVisibleParticle on ClientLevel so effect is visible at any distance. */
-    private static void addParticle(Level world, net.minecraft.core.particles.ParticleOptions type, double x, double y, double z, double vx, double vy, double vz) {
+    private static void addParticle(Level world, ParticleOptions type, double x, double y, double z, double vx, double vy, double vz) {
         if (world instanceof ClientLevel clientLevel) {
             clientLevel.addAlwaysVisibleParticle(type, x, y, z, vx, vy, vz);
         } else {
@@ -144,5 +151,178 @@ public final class SkillEffectReceiver {
             addParticle(world, ParticleTypes.CLOUD, x, y + 0.5, z,
                 (world.random.nextDouble() - 0.5) * 0.2, 0.1, (world.random.nextDouble() - 0.5) * 0.2);
         }
+    }
+
+    /**
+     * Fire: Hỏa trail dari trên xuống + cháy vùng.
+     * Particle: FLAME, LARGE_SMOKE
+     * Màu sắc: Gradient Cam→Đỏ
+     */
+    private static void spawnFireParticles(Level world, double x, double y, double z) {
+        LOGGER.debug("Skill effect spawnFireParticles: start at ({}, {}, {})", x, y, z);
+        double height = 15.0;
+        // Vệt lửa từ trên xuống
+        for (int i = 0; i < 20; i++) {
+            double progress = (i + world.random.nextDouble()) / 20.0;
+            double py = y + height * (1.0 - progress);
+            double ox = (world.random.nextDouble() - 0.5) * 2;
+            double oz = (world.random.nextDouble() - 0.5) * 2;
+            addParticle(world, ParticleTypes.FLAME, x + ox, py, z + oz,
+                0, -0.5, 0);
+            addParticle(world, ParticleTypes.LARGE_SMOKE, x + ox * 0.5, py + 0.3, z + oz * 0.5,
+                0, -0.3, 0);
+        }
+        // Cháy vùng quanh trung tâm
+        for (int i = 0; i < 16; i++) {
+            double angle = (i / 16.0) * Math.PI * 2;
+            double r = 2.0;
+            double px = x + Math.cos(angle) * r;
+            double pz = z + Math.sin(angle) * r;
+            addParticle(world, ParticleTypes.FLAME, px, y + 0.5, pz, 0.2, 0.3, 0.2);
+            addParticle(world, ParticleTypes.LARGE_SMOKE, px, y + 1, pz, 0.1, 0.2, 0.1);
+        }
+        LOGGER.debug("Skill effect spawnFireParticles: done");
+    }
+
+    /**
+     * Ice: Băng tinh thể rơi và XOAY ốc.
+     * Particle: SNOWFLAKE, END_ROD
+     * Màu sắc: Gradient Cyan→Trắng
+     */
+    private static void spawnIceParticles(Level world, double x, double y, double z) {
+        LOGGER.debug("Skill effect spawnIceParticles: start at ({}, {}, {})", x, y, z);
+        double height = 20.0;
+        // Tinh thể băng rơi từ trên xuống
+        for (int i = 0; i < 15; i++) {
+            double progress = (i + world.random.nextDouble()) / 15.0;
+            double py = y + height * (1.0 - progress);
+            addParticle(world, ParticleTypes.SNOWFLAKE, x, py, z, 0, -0.6, 0);
+            addParticle(world, ParticleTypes.END_ROD, x, py + 0.3, z, 0, -0.3, 0);
+        }
+        // Vòng tròn băng quanh trung tâm
+        for (int i = 0; i < 24; i++) {
+            double angle = (i / 24.0) * Math.PI * 2;
+            double r = 2.0;
+            double px = x + Math.cos(angle) * r;
+            double pz = z + Math.sin(angle) * r;
+            addParticle(world, ParticleTypes.SNOWFLAKE, x, y, z,
+                (px - x) * 0.1, 0.4, (pz - z) * 0.1);
+            addParticle(world, ParticleTypes.END_ROD, x, y, z,
+                (px - x) * 0.05, 0.2, (pz - z) * 0.05);
+        }
+        LOGGER.debug("Skill effect spawnIceParticles: done");
+    }
+
+    /**
+     * Lightning: Tia sét zig-zag từ trên xuống + điện tích lan ra.
+     * Particle: ELECTRIC_SPARK, SMOKE
+     * Màu sắc: Gradient Xanh→Trắng chớp
+     */
+    private static void spawnLightningParticles(Level world, double x, double y, double z) {
+        LOGGER.debug("Skill effect spawnLightningParticles: start at ({}, {}, {})", x, y, z);
+        double height = 25.0;
+        int steps = 15;
+        // Tia sét zig-zag từ trên xuống
+        for (int i = 0; i <= steps; i++) {
+            double progress = (double) i / steps;
+            double py = y + height * (1.0 - progress);
+            double jitter = 0.3 * (1.0 - progress);
+            double px = x + (world.random.nextDouble() - 0.5) * jitter * 4;
+            double pz = z + (world.random.nextDouble() - 0.5) * jitter * 4;
+            addParticle(world, ParticleTypes.ELECTRIC_SPARK, px, py, pz, 0, -0.8, 0);
+            addParticle(world, ParticleTypes.SMOKE, px, py, pz, 0, 0, 0);
+        }
+        // Điện tích lan ra quanh trung tâm
+        for (int i = 0; i < 32; i++) {
+            double angle = (i / 32.0) * Math.PI * 2;
+            double r = 2.5;
+            double px = x + Math.cos(angle) * r;
+            double pz = z + Math.sin(angle) * r;
+            addParticle(world, ParticleTypes.ELECTRIC_SPARK, x, y, z,
+                (px - x) * 0.1, 0.2, (pz - z) * 0.1);
+            addParticle(world, ParticleTypes.SMOKE, x, y, z, 0, 0, 0);
+        }
+        LOGGER.debug("Skill effect spawnLightningParticles: done");
+    }
+
+    /**
+     * Earth: Đất/lỏa phun lên từ mặt đất + gợn sóng.
+     * Particle: DRIPSTONE_BLOCK, CRIMSON_SPORE
+     * Màu sắc: Nâu→Xanh đất
+     */
+    private static void spawnEarthParticles(Level world, double x, double y, double z) {
+        LOGGER.debug("Skill effect spawnEarthParticles: start at ({}, {}, {})", x, y, z);
+        double height = 10.0;
+        // Đất/lỏa phun lên từ mặt đất
+        for (int i = 0; i < 20; i++) {
+            double progress = (i + world.random.nextDouble()) / 20.0;
+            double py = y + height * progress;
+            double ox = (world.random.nextDouble() - 0.5) * 2;
+            double oz = (world.random.nextDouble() - 0.5) * 2;
+            addParticle(world, ParticleTypes.CRIMSON_SPORE, x + ox, py, z + oz, 0, 0.5, 0);
+            addParticle(world, ParticleTypes.CRIMSON_SPORE, x + ox * 0.5, py + 0.3, z + oz * 0.5, 0, 0.3, 0);
+        }
+        // Gợn sóng trên đất
+        for (int i = 0; i < 16; i++) {
+            double angle = (i / 16.0) * Math.PI * 2;
+            double r = 2.0;
+            double px = x + Math.cos(angle) * r;
+            double pz = z + Math.sin(angle) * r;
+            addParticle(world, ParticleTypes.CRIMSON_SPORE, x, y, z,
+                (px - x) * 0.1, 0.2, (pz - z) * 0.1);
+            addParticle(world, ParticleTypes.CRIMSON_SPORE, x, y, z,
+                (px - x) * 0.05, 0.1, (pz - z) * 0.05);
+        }
+        LOGGER.debug("Skill effect spawnEarthParticles: done");
+    }
+
+    /**
+     * Wind: Gió XOAY ốc từ trên xuống + luồng khí.
+     * Particle: CLOUD, END_ROD
+     * Màu sắc: Xanh nhạt→Xám
+     */
+    private static void spawnWindParticles(Level world, double x, double y, double z) {
+        LOGGER.debug("Skill effect spawnWindParticles: start at ({}, {}, {})", x, y, z);
+        double height = 15.0;
+        // Gió XOAY ốc từ trên xuống
+        for (int i = 0; i < 15; i++) {
+            double progress = (i + world.random.nextDouble()) / 15.0;
+            double py = y + height * (1.0 - progress);
+            double angle = (System.currentTimeMillis() * 0.005 + progress * Math.PI * 4) % (Math.PI * 2);
+            double r = 1.5 + progress * 2.0;
+            double px = x + Math.cos(angle) * r;
+            double pz = z + Math.sin(angle) * r;
+            addParticle(world, ParticleTypes.CLOUD, px, py, pz, 0, -0.5, 0);
+            addParticle(world, ParticleTypes.END_ROD, px, py + 0.3, pz, 0, -0.3, 0);
+        }
+        LOGGER.debug("Skill effect spawnWindParticles: done");
+    }
+
+    /**
+     * Poison: Khí độc lan tỏa + độc tinh rơi.
+     * Particle: SMOKE, CRIMSON_SPORE
+     * Màu sắc: Xanh→Tím độc
+     */
+    private static void spawnPoisonParticles(Level world, double x, double y, double z) {
+        LOGGER.debug("Skill effect spawnPoisonParticles: start at ({}, {}, {})", x, y, z);
+        double height = 12.0;
+        // Độc tinh rơi từ trên xuống
+        for (int i = 0; i < 20; i++) {
+            double progress = (i + world.random.nextDouble()) / 20.0;
+            double py = y + height * (1.0 - progress);
+            double ox = (world.random.nextDouble() - 0.5) * 2;
+            double oz = (world.random.nextDouble() - 0.5) * 2;
+            addParticle(world, ParticleTypes.SMOKE, x + ox, py, z + oz, 0, -0.5, 0);
+            addParticle(world, ParticleTypes.CRIMSON_SPORE, x + ox * 0.5, py + 0.3, z + oz * 0.5, 0, -0.3, 0);
+        }
+        // Mây khí độc lan tỏa
+        for (int i = 0; i < 20; i++) {
+            double ox = (world.random.nextDouble() - 0.5) * 3;
+            double oz = (world.random.nextDouble() - 0.5) * 3;
+            double py = y + 0.5 + world.random.nextDouble() * 2;
+            addParticle(world, ParticleTypes.SMOKE, x + ox, py, z + oz, 0, 0.2, 0);
+            addParticle(world, ParticleTypes.CRIMSON_SPORE, x + ox * 0.5, py + 0.3, z + oz * 0.5, 0, 0.1, 0);
+        }
+        LOGGER.debug("Skill effect spawnPoisonParticles: done");
     }
 }

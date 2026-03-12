@@ -52,4 +52,9 @@ public class FabricPlayerAdapter implements PlayerAdapter {
     public ServerPlayer getServerPlayer() {
         return player;
     }
+
+    /** For Fabric API access - returns the underlying ServerPlayer. */
+    public ServerPlayer getPlayer() {
+        return player;
+    }
 }

@@ -38,7 +38,8 @@ public record SkillDefinitionsPayload(List<SkillDefinitionData> skills)
     }
 
     /**
-     * Lightweight data record for network transfer (without Instant fields).
+     * Lightweight data record for network transfer.
+     * elementalType + effects grouped as ElementalInfo to keep composite at 12 components (StreamCodec limit).
      */
     public record SkillDefinitionData(
         String skillId,
@@ -52,8 +53,18 @@ public record SkillDefinitionsPayload(List<SkillDefinitionData> skills)
         String skillType,
         int castTimeTicks,
         boolean consumable,
-        List<String> effects
+        ElementalInfo elemental
     ) {
+        public record ElementalInfo(String elementalType, List<String> effects) {
+            public static final StreamCodec<FriendlyByteBuf, ElementalInfo> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.STRING_UTF8,
+                ElementalInfo::elementalType,
+                ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list()),
+                ElementalInfo::effects,
+                ElementalInfo::new
+            );
+        }
+
         public static final StreamCodec<FriendlyByteBuf, SkillDefinitionData> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.STRING_UTF8,
             SkillDefinitionData::skillId,
@@ -77,8 +88,8 @@ public record SkillDefinitionsPayload(List<SkillDefinitionData> skills)
             SkillDefinitionData::castTimeTicks,
             ByteBufCodecs.BOOL,
             SkillDefinitionData::consumable,
-            ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list()),
-            SkillDefinitionData::effects,
+            ElementalInfo.STREAM_CODEC,
+            SkillDefinitionData::elemental,
             SkillDefinitionData::new
         );
     }
@@ -98,6 +109,7 @@ public record SkillDefinitionsPayload(List<SkillDefinitionData> skills)
 
         for (com.kiemhiep.api.model.SkillDefinition def : dbDefinitions) {
             List<String> effects = getEffectsForSkill(def.behaviorId());
+            String elementalType = def.elementalType() != null ? def.elementalType() : "";
             skills.add(new SkillDefinitionData(
                 def.skillId(),
                 def.itemId(),
@@ -110,7 +122,7 @@ public record SkillDefinitionsPayload(List<SkillDefinitionData> skills)
                 def.skillType(),
                 def.castTimeTicks(),
                 def.consumable(),
-                effects
+                new SkillDefinitionData.ElementalInfo(elementalType, effects)
             ));
         }
 

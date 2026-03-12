@@ -18,10 +18,18 @@ public record SkillDefinition(
     String skillType,
     int castTimeTicks,
     boolean consumable,
+    String elementalType,
     List<String> effects
 ) {
     public static final double DEFAULT_MAX_RADIUS = 8.0;
     public static final int DEFAULT_COOLDOWN_TICKS = 40;
+    public static final String DEFAULT_ELEMENTAL_TYPE = "none";
+
+    public SkillDefinition {
+        if (elementalType == null || elementalType.isEmpty()) {
+            elementalType = DEFAULT_ELEMENTAL_TYPE;
+        }
+    }
 
     /**
      * Get display string for cooldown in seconds.

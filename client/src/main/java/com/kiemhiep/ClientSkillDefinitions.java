@@ -1,6 +1,9 @@
 package com.kiemhiep;
 
 import com.kiemhiep.api.model.SkillDefinition;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +46,37 @@ public final class ClientSkillDefinitions {
      */
     public static SkillDefinition getBySkillId(String skillId) {
         return BY_SKILL_ID.get(skillId);
+    }
+
+    /**
+     * Get skill ID from a skill item stack.
+     */
+    public static Identifier getSkillId(ItemStack stack) {
+        if (stack.isEmpty()) return null;
+        var itemKey = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        if (itemKey == null) return null;
+        String itemId = itemKey.getNamespace() + ":" + itemKey.getPath();
+        SkillDefinition def = BY_ITEM_ID.get(itemId);
+        if (def == null) return null;
+        String sid = def.skillId();
+        int colon = sid.indexOf(':');
+        return colon >= 0
+            ? Identifier.fromNamespaceAndPath(sid.substring(0, colon), sid.substring(colon + 1))
+            : Identifier.fromNamespaceAndPath("kiemhiep", sid);
+    }
+
+    /**
+     * Get skill definition from a skill item stack.
+     */
+    public static SkillDefinition getDefinition(Identifier skillId) {
+        return skillId != null ? BY_SKILL_ID.get(skillId.toString()) : null;
+    }
+
+    /**
+     * Get skill definition by skill ID string (e.g. "kiemhiep:skill_fireball").
+     */
+    public static SkillDefinition getDefinition(String skillId) {
+        return skillId != null ? BY_SKILL_ID.get(skillId) : null;
     }
 
     /**

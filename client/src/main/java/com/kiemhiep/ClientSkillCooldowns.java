@@ -1,5 +1,6 @@
 package com.kiemhiep;
 
+import com.kiemhiep.api.model.SkillDefinition;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -64,6 +65,32 @@ public final class ClientSkillCooldowns {
 
         long now = System.currentTimeMillis();
         return Math.max(0L, endTime - now);
+    }
+
+    /**
+     * Get the cooldown progress ratio (0.0 = ready, 1.0 = ongoing).
+     * Convenience method that reads cooldown duration from ClientSkillDefinitions.
+     *
+     * @param skillId the skill identifier
+     * @return progress ratio between 0.0 and 1.0
+     */
+    public static float getCooldownProgress(String skillId) {
+        Long endTime = cooldownEndTimes.get(skillId);
+        if (endTime == null) return 0.0f;
+
+        long now = System.currentTimeMillis();
+        if (endTime <= now) return 0.0f;
+
+        // Get default cooldown duration from definitions (5 seconds = 5000ms)
+        SkillDefinition definition = ClientSkillDefinitions.getDefinition(skillId);
+        long duration = 5000L; // Default 5 seconds
+        if (definition != null) {
+            // Convert ticks to millis (20 ticks = 1 second)
+            duration = (long) definition.cooldownTicks() * 50L;
+        }
+
+        long remaining = endTime - now;
+        return Math.min(1.0f, (float) remaining / duration);
     }
 
     /**

@@ -7,6 +7,7 @@ import com.kiemhiep.effect.SkySplitEffect;
 import com.kiemhiep.hud.LevelManaHud;
 import com.kiemhiep.hud.SkillItemCooldownOverlay;
 import com.kiemhiep.hud.SkySplitOverlay;
+import com.kiemhiep.hud.ElementalHudOverlay;
 import com.kiemhiep.network.PlayerStatsReceiver;
 import com.kiemhiep.network.SkillEffectReceiver;
 import com.kiemhiep.network.SkillCooldownReceiver;
@@ -28,6 +29,7 @@ public class KiemhiepClient implements ClientModInitializer {
 		LevelManaHud.register();
 		SkillItemCooldownOverlay.register();
 		SkySplitOverlay.register();
+		ElementalHudOverlay.register();
 		SkySplitEffect.init();
 	}
 }
