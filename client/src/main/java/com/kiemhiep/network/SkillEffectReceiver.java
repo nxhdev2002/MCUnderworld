@@ -44,28 +44,47 @@ public final class SkillEffectReceiver {
     private SkillEffectReceiver() {}
 
     public static void register() {
+        System.out.println("[Kiemhiep] SkillEffectReceiver registering (client mod loaded)");
+        LOGGER.info("[SkillEffect] register: client payload receiver init");
         PayloadTypeRegistry.playS2C().register(SkillEffectPayload.TYPE, SkillEffectPayload.STREAM_CODEC);
         ClientPlayNetworking.registerGlobalReceiver(SkillEffectPayload.TYPE, (payload, context) -> {
-            double x = payload.x();
-            double y = payload.y();
-            double z = payload.z();
-            String effectType = payload.effectType();
-            context.client().execute(() -> {
-                Level world = context.client().level;
-                if (world == null) {
-                    LOGGER.warn("Skill effect: level null when spawning particles, aborting");
-                    return;
-                }
-                String worldId = payload.worldId();
-                if (worldId != null && !worldId.isEmpty() && !world.dimension().toString().equals(worldId)) {
-                    LOGGER.trace("Skill effect ignored, dimension mismatch: payload.worldId={} current={}", worldId, world.dimension().toString());
-                    return;
-                }
-                if (ELEMENTAL_TYPES.contains(effectType)) {
-                    ElementalShaderState.activate(effectType);
-                }
-                spawnParticles(world, x, y, z, effectType);
-            });
+            try {
+                double x = payload.x();
+                double y = payload.y();
+                double z = payload.z();
+                String effectType = payload.effectType();
+                System.out.println("[Kiemhiep] SkillEffect received: effectType=" + effectType + " at (" + x + "," + y + "," + z + ") worldId=" + payload.worldId());
+                LOGGER.info("[SkillEffect] received effectType={} at ({}, {}, {}) worldId={}", effectType, x, y, z, payload.worldId());
+                context.client().execute(() -> {
+                    try {
+                        Level world = context.client().level;
+                        if (world == null) {
+                            LOGGER.warn("Skill effect: level null when spawning particles, aborting");
+                            return;
+                        }
+                        String worldId = payload.worldId();
+                        String currentDim = world.dimension().toString();
+                        if (worldId != null && !worldId.isEmpty() && !currentDim.equals(worldId)) {
+                            LOGGER.warn("[SkillEffect] ignored (dimension mismatch): payload.worldId={} current={}", worldId, currentDim);
+                            return;
+                        }
+                        if (ELEMENTAL_TYPES.contains(effectType)) {
+                            ElementalShaderState.activate(effectType);
+                        }
+                        spawnParticles(world, x, y, z, effectType);
+                        if (context.client().player != null) {
+                            context.client().player.displayClientMessage(
+                                net.minecraft.network.chat.Component.literal("§b[Kiemhiep] Effect: " + effectType), true);
+                        }
+                    } catch (Throwable t) {
+                        System.err.println("[Kiemhiep] SkillEffect handler error: " + t.getMessage());
+                        LOGGER.error("[SkillEffect] handler error", t);
+                    }
+                });
+            } catch (Throwable t) {
+                System.err.println("[Kiemhiep] SkillEffect decode/callback error: " + t.getMessage());
+                LOGGER.error("[SkillEffect] decode/callback error", t);
+            }
         });
     }
 

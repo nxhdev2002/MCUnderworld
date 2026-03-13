@@ -24,7 +24,7 @@ public class FabricWorldAdapter implements WorldAdapter {
 
     @Override
     public String getWorldId() {
-        // Dimension is ResourceKey<Level>; use toString() for stable world id (e.g. "minecraft:overworld")
+        // Dimension ResourceKey toString() for world id; client compares with same
         return level.dimension().toString();
     }
 

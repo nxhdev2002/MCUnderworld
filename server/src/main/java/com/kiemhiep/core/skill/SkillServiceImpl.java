@@ -1,5 +1,6 @@
 package com.kiemhiep.core.skill;
 
+import com.kiemhiep.Kiemhiep;
 import com.kiemhiep.api.model.Skill;
 import com.kiemhiep.api.model.SkillDefinition;
 import com.kiemhiep.api.repository.SkillDefinitionRepository;
@@ -55,7 +56,22 @@ public class SkillServiceImpl implements SkillService {
     @Override
     public UseResult useSkill(UUID casterId, String itemId, long serverTick) {
         Optional<SkillDefinition> def = getByItemId(itemId);
-        if (def.isEmpty()) return UseResult.INVALID_SKILL;
+        if (def.isEmpty()) {
+            // Fallback: game sends "namespace:path" (e.g. kiemhiep:skill_ice_shard); DB may have skill_id = path
+            int colon = itemId.indexOf(':');
+            if (colon >= 0 && colon + 1 < itemId.length()) {
+                String skillIdFromPath = itemId.substring(colon + 1);
+                def = definitionRepository.getBySkillId(skillIdFromPath);
+                if (def.isPresent()) {
+                    definitionByItemId.put(itemId, def.get());
+                    Kiemhiep.LOGGER.debug("[Skill] resolved itemId={} via skill_id={}", itemId, skillIdFromPath);
+                }
+            }
+        }
+        if (def.isEmpty()) {
+            Kiemhiep.LOGGER.info("[Skill] no definition for itemId={} (skill item not in DB or wrong item)", itemId);
+            return UseResult.INVALID_SKILL;
+        }
         return skillManager.useSkill(casterId, def.get(), serverTick);
     }
 

@@ -149,6 +149,7 @@ public class SkillModule implements KiemHiepModule {
         SkillRegistry.register("DRAGON_BREATH", DragonBreathSkill.INSTANCE);
         SkillRegistry.register("BLAZING_SWORD", BlazingSwordSkill.INSTANCE);
         SkillRegistry.register("PYROCLASTIC_FLOW", PyroclasticFlowSkill.INSTANCE);
+        SkillRegistry.register("ICE_SHARD", GlacierSpikeSkill.INSTANCE);
         SkillRegistry.register("GLACIER_SPIKE", GlacierSpikeSkill.INSTANCE);
         SkillRegistry.register("CRYO_BLAST", CryoBlastSkill.INSTANCE);
         SkillRegistry.register("ARCTIC_WIND", ArcticWindSkill.INSTANCE);
@@ -194,6 +195,27 @@ public class SkillModule implements KiemHiepModule {
         SkillRegistry.register("FROZEN_CAGE", FrozenCageSkill.INSTANCE);
         SkillRegistry.register("ELECTRIC_SNAKE", ElectricSnakeSkill.INSTANCE);
 
+        // V5 seed: elemental skills (map to existing implementations)
+        SkillRegistry.register("FIRE_BLAST", FireballSkill.INSTANCE);
+        SkillRegistry.register("FIRE_STORM", FireballSkill.INSTANCE);
+        SkillRegistry.register("FIRE_WALL", InfernoFistSkill.INSTANCE);
+        SkillRegistry.register("FROST_WAVE", GlacierSpikeSkill.INSTANCE);
+        SkillRegistry.register("ICE_CRYSTAL", CryoBlastSkill.INSTANCE);
+        SkillRegistry.register("LIGHTNING_BOLT", ThunderSkill.INSTANCE);
+        SkillRegistry.register("CHAIN_LIGHTNING", ElectroWaveSkill.INSTANCE);
+        SkillRegistry.register("THUNDER_STORM", RagingThunderSkill.INSTANCE);
+        SkillRegistry.register("EARTH_SPIKE", StoneFistSkill.INSTANCE);
+        SkillRegistry.register("TREMOR", SeismicPulseSkill.INSTANCE);
+        SkillRegistry.register("EARTH_BARRIER", MudWallSkill.INSTANCE);
+        SkillRegistry.register("WIND_CUT", GaleSwordSkill.INSTANCE);
+        SkillRegistry.register("CYCLONE", TornadoSweepSkill.INSTANCE);
+        SkillRegistry.register("SONIC_BOOM", SonicSlicerSkill.INSTANCE);
+        SkillRegistry.register("POISON_DART", BlackSparkSkill.INSTANCE);
+        SkillRegistry.register("POISON_CLOUD", AcidRainSkill.INSTANCE);
+        SkillRegistry.register("VENOM_WEB", MiasmaBlastSkill.INSTANCE);
+        // V6: lightning stab (melee)
+        SkillRegistry.register("LIGHTNING_STAB", ChainThrustSkill.INSTANCE);
+
         SkillNetworking.register();
         // Set repository reference for skill definitions payload
         com.kiemhiep.platform.network.SkillDefinitionsPayload.setRepository(definitionRepository);
@@ -235,21 +257,17 @@ public class SkillModule implements KiemHiepModule {
             String itemId = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
             if (!(world instanceof ServerLevel serverLevel)) return InteractionResult.PASS;
             long serverTick = serverLevel.getServer().getTickCount();
-            Kiemhiep.LOGGER.debug("Item used (skill check): player={} itemId={} hand={}", player.getName().getString(), itemId, hand);
+            Kiemhiep.LOGGER.info("[Skill] item used: player={} itemId={} hand={}", player.getName().getString(), itemId, hand);
             SkillManager.UseResult result = skillServiceOpt.get().useSkill(player.getUUID(), itemId, serverTick);
+            Kiemhiep.LOGGER.info("[Skill] useSkill result: itemId={} result={}", itemId, result);
             if (result == SkillManager.UseResult.SUCCESS) {
                 skillServiceOpt.get().getByItemId(itemId).ifPresent(def -> {
                     if (def.consumable()) stack.shrink(1);
                 });
-                Kiemhiep.LOGGER.debug("Skill use success: player={} itemId={} result={}", player.getName().getString(), itemId, result);
                 return InteractionResult.SUCCESS;
             }
             if (result == SkillManager.UseResult.CAST_STARTED) {
-                Kiemhiep.LOGGER.debug("Skill cast started (use item): player={} itemId={}", player.getName().getString(), itemId);
                 return InteractionResult.SUCCESS;
-            }
-            if (result != SkillManager.UseResult.SUCCESS && result != SkillManager.UseResult.CAST_STARTED) {
-                Kiemhiep.LOGGER.debug("Skill use not triggered: player={} itemId={} result={}", player.getName().getString(), itemId, result);
             }
             return InteractionResult.PASS;
         });

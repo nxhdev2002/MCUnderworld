@@ -44,31 +44,26 @@ public final class ElementalShaderOverlay {
         String effectType = ElementalShaderState.getActiveEffectType();
         if (effectType == null) return;
 
-        // Gọi ShaderManager để (sau này) áp shader; hiện tại trả về null nên dùng overlay màu
-        Object shader = ShaderManager.getShaderByType(effectType);
-        if (shader != null) {
-            // TODO: khi loadShader() được implement, áp dụng post-process shader tại đây
-            // ((PostEffectProcessor) shader).render(...);
-            return;
-        }
-
+        // Luôn vẽ overlay màu (fallback). PostChain.process() cần GraphicsResourceAllocator chưa dùng được từ HUD.
         float progress = ElementalShaderState.getProgress();
         int color = getColorForType(effectType, progress);
         int w = mc.getWindow().getGuiScaledWidth();
         int h = mc.getWindow().getGuiScaledHeight();
         graphics.fill(0, 0, w, h, color);
+
         // Log tối đa 1 lần mỗi lần kích hoạt (progress < 0.05 và chưa log effect này trong 1.5s)
         if (progress < 0.05f) {
             long now = System.currentTimeMillis();
             if (!effectType.equals(lastLoggedEffectType) || (now - lastLoggedTime) > 1500) {
-                LOGGER.info("[ElementalShaderOverlay] active effectType={} size={}x{}", effectType, w, h);
+                Object shader = ShaderManager.getShaderByType(effectType);
+                LOGGER.info("[ElementalShaderOverlay] active effectType={} size={}x{} shaderLoaded={}", effectType, w, h, shader != null);
                 lastLoggedEffectType = effectType;
                 lastLoggedTime = now;
             }
         } else {
             lastLoggedEffectType = null; // reset để lần activate sau log lại
         }
-        LOGGER.debug("[ElementalShaderOverlay] drawing effectType={} progress={} size={}x{} color=0x{}", effectType, progress, w, h, Integer.toHexString(color));
+        LOGGER.trace("[ElementalShaderOverlay] drawing effectType={} progress={} size={}x{} color=0x{}", effectType, progress, w, h, Integer.toHexString(color));
     }
 
     private static int getColorForType(String effectType, float progress) {

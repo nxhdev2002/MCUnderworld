@@ -1,0 +1,19 @@
+{
+    "targets": {
+        "swap": {}
+    },
+    "passes": [
+        {
+            "vertex_shader": "kiemhiep:core/bear_summon",
+            "fragment_shader": "kiemhiep:core/bear_summon",
+            "inputs": [
+                {
+                    "sampler_name": "In",
+                    "target": "minecraft:main",
+                    "bilinear": true
+                }
+            ],
+            "output": "minecraft:main"
+        }
+    ]
+}

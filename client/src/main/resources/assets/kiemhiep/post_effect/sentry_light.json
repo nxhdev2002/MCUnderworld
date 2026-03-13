@@ -1,0 +1,19 @@
+{
+    "targets": {
+        "swap": {}
+    },
+    "passes": [
+        {
+            "vertex_shader": "kiemhiep:core/sentry_light",
+            "fragment_shader": "kiemhiep:core/sentry_light",
+            "inputs": [
+                {
+                    "sampler_name": "In",
+                    "target": "minecraft:main",
+                    "bilinear": true
+                }
+            ],
+            "output": "minecraft:main"
+        }
+    ]
+}

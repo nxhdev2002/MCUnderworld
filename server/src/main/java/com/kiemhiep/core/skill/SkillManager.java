@@ -114,7 +114,7 @@ public final class SkillManager {
         if (world != null && definition.maxRadius() > 0) {
             targets = world.getEntitiesInRadius(origin, definition.maxRadius());
         }
-        Kiemhiep.LOGGER.debug("Skill executed: casterId={} skillId={} behaviorId={} targets={}", casterId, definition.skillId(), definition.behaviorId(), targets.size());
+        Kiemhiep.LOGGER.info("[Skill] executing: casterId={} skillId={} behaviorId={} targets={}", casterId, definition.skillId(), definition.behaviorId(), targets.size());
         SkillContext ctx = new SkillContextImpl(casterId, caster, definition, origin, targets, serverTick, effectManager);
         skill.execute(ctx);
 

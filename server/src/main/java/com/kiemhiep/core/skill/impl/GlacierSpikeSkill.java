@@ -32,6 +32,9 @@ public class GlacierSpikeSkill extends BaseSkill implements ISingleTargetDamage 
 
     @Override
     protected void onExecute(SkillContext ctx) {
+        if (ctx.getEffectRunner() != null) {
+            ctx.getEffectRunner().playEffect(ctx, "ice");
+        }
         Location location = ctx.getOrigin();
         PlayerAdapter player = ctx.getCaster();
 

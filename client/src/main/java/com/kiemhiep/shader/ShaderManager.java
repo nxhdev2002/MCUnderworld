@@ -30,7 +30,8 @@ public final class ShaderManager {
 
     /** effectType sent by server -> post-effect file name (when different). */
     private static final Map<String, String> EFFECT_TYPE_ALIASES = Map.of(
-        "summon_crab", "crab_summon"
+        "summon_crab", "crab_summon",
+        "meteor", "sky_split"
     );
 
     /**
