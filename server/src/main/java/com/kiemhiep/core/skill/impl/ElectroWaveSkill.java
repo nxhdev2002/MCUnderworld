@@ -177,8 +177,9 @@ public class ElectroWaveSkill extends BaseSkill implements IThunder {
             double baseDamage = 10.0 + (casterLevel * 2.5);
             double areaDamage = baseDamage * distanceFactor * DAMAGE_MULTIPLIER;
 
-            // Apply damage using damage source factory pattern
-            target.hurt(target.damageSources().indirectMagic((net.minecraft.world.entity.Entity)ctx.getCasterEntity(), (net.minecraft.world.entity.Entity)caster), (float) areaDamage);
+            // Apply damage: caster entity must be vanilla Entity (ServerPlayer), not PlayerAdapter
+            net.minecraft.world.entity.Entity casterEntity = fabricCaster.getPlayer();
+            target.hurt(target.damageSources().indirectMagic(casterEntity, casterEntity), (float) areaDamage);
 
             // Sound on hit
             target.level().playSound(null, target.getX(), target.getY(), target.getZ(),

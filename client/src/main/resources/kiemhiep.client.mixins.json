@@ -4,8 +4,7 @@
 	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"ExampleClientMixin",
-		"ItemTooltipMixin",
-		"LevelRendererMixin"
+		"ItemTooltipMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

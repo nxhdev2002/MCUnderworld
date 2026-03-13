@@ -1,4 +1,4 @@
-package com.kiemhiep.platform.network;
+package com.kiemhiep.network;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -7,7 +7,8 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 
 /**
- * S2C payload for skill effect (tornado, tsunami, meteor, etc.). Client spawns particles at location.
+ * S2C payload for skill effect (tornado, tsunami, meteor, etc.). Shared by server and client.
+ * Server sends; client spawns particles at location. Must match on both sides.
  */
 public record SkillEffectPayload(String skillId, String effectType, String worldId, double x, double y, double z)
     implements CustomPacketPayload {

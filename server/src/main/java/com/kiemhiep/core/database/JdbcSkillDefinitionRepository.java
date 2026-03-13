@@ -21,7 +21,7 @@ public class JdbcSkillDefinitionRepository implements SkillDefinitionRepository 
     @Override
     public Optional<SkillDefinition> getById(long id) {
         String sql = "SELECT id, skill_id, behavior_id, item_id, name, mana_cost, cooldown_ticks, max_radius, " +
-            "is_aoe, is_melee, skill_type, cast_time_ticks, cast_cancellable, consumable, parent_skill_id, " +
+            "is_aoe, is_melee, skill_type, cast_time_ticks, cast_cancellable, consumable, elemental_type, parent_skill_id, " +
             "evolution_level, level, created_at, updated_at FROM kiemhiep_skill_definitions WHERE id = ?";
         try (Connection c = dataSource.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -36,7 +36,7 @@ public class JdbcSkillDefinitionRepository implements SkillDefinitionRepository 
     @Override
     public Optional<SkillDefinition> getBySkillId(String skillId) {
         String sql = "SELECT id, skill_id, behavior_id, item_id, name, mana_cost, cooldown_ticks, max_radius, " +
-            "is_aoe, is_melee, skill_type, cast_time_ticks, cast_cancellable, consumable, parent_skill_id, " +
+            "is_aoe, is_melee, skill_type, cast_time_ticks, cast_cancellable, consumable, elemental_type, parent_skill_id, " +
             "evolution_level, level, created_at, updated_at FROM kiemhiep_skill_definitions WHERE skill_id = ?";
         try (Connection c = dataSource.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, skillId);
@@ -51,7 +51,7 @@ public class JdbcSkillDefinitionRepository implements SkillDefinitionRepository 
     @Override
     public Optional<SkillDefinition> getByItemId(String itemId) {
         String sql = "SELECT id, skill_id, behavior_id, item_id, name, mana_cost, cooldown_ticks, max_radius, " +
-            "is_aoe, is_melee, skill_type, cast_time_ticks, cast_cancellable, consumable, parent_skill_id, " +
+            "is_aoe, is_melee, skill_type, cast_time_ticks, cast_cancellable, consumable, elemental_type, parent_skill_id, " +
             "evolution_level, level, created_at, updated_at FROM kiemhiep_skill_definitions WHERE item_id = ?";
         try (Connection c = dataSource.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, itemId);
@@ -66,7 +66,7 @@ public class JdbcSkillDefinitionRepository implements SkillDefinitionRepository 
     @Override
     public List<SkillDefinition> findAll() {
         String sql = "SELECT id, skill_id, behavior_id, item_id, name, mana_cost, cooldown_ticks, max_radius, " +
-            "is_aoe, is_melee, skill_type, cast_time_ticks, cast_cancellable, consumable, parent_skill_id, " +
+            "is_aoe, is_melee, skill_type, cast_time_ticks, cast_cancellable, consumable, elemental_type, parent_skill_id, " +
             "evolution_level, level, created_at, updated_at FROM kiemhiep_skill_definitions ORDER BY id";
         List<SkillDefinition> list = new ArrayList<>();
         try (Connection c = dataSource.getConnection();

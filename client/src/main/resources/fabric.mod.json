@@ -18,7 +18,8 @@
 			"com.kiemhiep.KiemhiepClientMain"
 		],
 		"client": [
-			"com.kiemhiep.KiemhiepClient"
+			"com.kiemhiep.KiemhiepClient",
+			"com.kiemhiep.ClientTooltipInitializer"
 		],
 		"fabric-datagen": [
 			"com.kiemhiep.KiemhiepDataGenerator"

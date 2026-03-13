@@ -31,7 +31,7 @@ VALUES
   -- ============================================
   ('skill_lightning_stab', 'LIGHTNING_STAB', 'kiemhiep:skill_lightning_stab', 'Lôi Chích', 30, 45, 8.0, false, true, 'DAMAGE_SINGLE', 8, true, false, 'Lôi', NULL, 0),
   ('skill_electro_wave', 'ELECTRO_WAVE', 'kiemhiep:skill_electro_wave', 'Điện L𩶨', 55, 80, 12.0, true, false, 'DAMAGE_AOE', 25, true, false, 'Lôi', NULL, 0),
-  ('skill_rAGING_thunder', 'RAGING_THUNDER', 'kiemhiep:skill_raging_thunder', 'Lôi Long', 75, 100, 16.0, true, false, 'DAMAGE_AOE', 35, true, false, 'Lôi', NULL, 0),
+  ('skill_raging_thunder', 'RAGING_THUNDER', 'kiemhiep:skill_raging_thunder', 'Lôi Long', 75, 100, 16.0, true, false, 'DAMAGE_AOE', 35, true, false, 'Lôi', NULL, 0),
   ('skill_chain_thrust', 'CHAIN_THRUST', 'kiemhiep:skill_chain_thrust', 'Liên Hoàn Chích', 45, 70, 10.0, false, true, 'DAMAGE_SINGLE', 15, true, false, 'Lôi', NULL, 0),
   ('skill_vajra_lightning', 'VAJRA_LIGHTNING', 'kiemhiep:skill_vajra_lightning', 'Kim Cang Lôi', 90, 130, 18.0, true, false, 'DAMAGE_AOE', 40, true, false, 'Lôi', NULL, 0),
 

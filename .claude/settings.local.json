@@ -14,7 +14,14 @@
       "Bash(./gradlew :server:classes --no-daemon)",
       "Bash(./gradlew dependencies:*)",
       "Bash(./gradlew :server:compileJava)",
-      "Bash(./gradlew :server:compileJava --no-daemon)"
+      "Bash(./gradlew :server:compileJava --no-daemon)",
+      "Bash(./gradlew :client:build)",
+      "Bash(./gradlew :server:build)",
+      "Bash(./gradlew clean:*)",
+      "Bash(./gradlew :client:build --no-daemon)",
+      "Bash(./gradlew :client:remapJar --dry-run --no-daemon)",
+      "WebFetch(domain:fabricmc.net)",
+      "WebFetch(domain:wiki.fabricmc.net)"
     ]
   }
 }

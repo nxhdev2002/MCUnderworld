@@ -4,7 +4,7 @@ import com.kiemhiep.Kiemhiep;
 import com.kiemhiep.api.platform.Location;
 import com.kiemhiep.core.skill.EffectManager;
 import com.kiemhiep.platform.network.SkillCooldownPayload;
-import com.kiemhiep.platform.network.SkillEffectPayload;
+import com.kiemhiep.network.SkillEffectPayload;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.level.ServerLevel;
