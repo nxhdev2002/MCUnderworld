@@ -23,6 +23,11 @@ public class FabricEntityAdapter implements EntityAdapter {
         this.worldAdapter = worldAdapter;
     }
 
+    /** For Fabric API access - returns the underlying Entity. */
+    public Entity getEntity() {
+        return entity;
+    }
+
     @Override
     public UUID getUniqueId() {
         return entity.getUUID();

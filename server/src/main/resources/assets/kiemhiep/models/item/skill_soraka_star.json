@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "kiemhiep:item/skill_soraka_star"
+  }
+}

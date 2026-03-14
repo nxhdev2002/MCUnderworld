@@ -47,4 +47,14 @@ public class FabricPlayerAdapter implements PlayerAdapter {
     public String getType() {
         return "player";
     }
+
+    /** For platform use (e.g. sending packets). */
+    public ServerPlayer getServerPlayer() {
+        return player;
+    }
+
+    /** For Fabric API access - returns the underlying ServerPlayer. */
+    public ServerPlayer getPlayer() {
+        return player;
+    }
 }

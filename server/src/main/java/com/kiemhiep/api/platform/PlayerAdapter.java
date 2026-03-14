@@ -1,5 +1,6 @@
 package com.kiemhiep.api.platform;
 
+import com.kiemhiep.platform.FabricPlayerAdapter;
 import java.util.UUID;
 
 /**
@@ -19,4 +20,12 @@ public interface PlayerAdapter extends EntityAdapter {
 
     @Override
     WorldAdapter getWorld();
+
+    /** level của player. */
+    default int getLevel() {
+        if (this instanceof FabricPlayerAdapter fabric) {
+            return fabric.getPlayer().experienceLevel;
+        }
+        return 1;
+    }
 }

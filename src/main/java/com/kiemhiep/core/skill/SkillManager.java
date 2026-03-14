@@ -107,7 +107,7 @@ public final class SkillManager {
         if (world != null && definition.maxRadius() > 0) {
             targets = world.getEntitiesInRadius(origin, definition.maxRadius());
         }
-        SkillContext ctx = new SkillContextImpl(casterId, caster, definition, origin, targets, serverTick);
+        SkillContext ctx = new SkillContextImpl(casterId, caster, definition, origin, targets, serverTick, effectManager);
         skill.execute(ctx);
 
         long cooldownEndMillis = System.currentTimeMillis() + definition.cooldownTicks() * 50L;

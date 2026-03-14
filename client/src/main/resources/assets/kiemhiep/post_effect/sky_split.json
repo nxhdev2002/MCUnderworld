@@ -1,0 +1,19 @@
+{
+    "targets": {
+        "swap": {}
+    },
+    "passes": [
+        {
+            "vertex_shader": "kiemhiep:core/sky_split",
+            "fragment_shader": "kiemhiep:core/sky_split",
+            "inputs": [
+                {
+                    "sampler_name": "In",
+                    "target": "minecraft:main",
+                    "bilinear": true
+                }
+            ],
+            "output": "minecraft:main"
+        }
+    ]
+}

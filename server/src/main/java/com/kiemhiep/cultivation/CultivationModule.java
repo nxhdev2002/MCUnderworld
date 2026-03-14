@@ -68,4 +68,8 @@ public class CultivationModule implements KiemHiepModule {
     public CultivationService getService() {
         return cultivationService;
     }
+
+    public PlayerService getPlayerService() {
+        return playerService;
+    }
 }

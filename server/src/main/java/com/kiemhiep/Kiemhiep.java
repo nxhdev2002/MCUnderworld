@@ -1,5 +1,6 @@
 package com.kiemhiep;
 
+import com.kiemhiep.entity.EntityRegistration;
 import net.fabricmc.api.ModInitializer;
 
 import org.slf4j.Logger;
@@ -15,6 +16,7 @@ public class Kiemhiep implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		EntityRegistration.register();
 		KiemhiepBootstrap.onInitialize();
 	}
 }

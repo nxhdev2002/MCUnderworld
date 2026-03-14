@@ -24,7 +24,7 @@ public class FabricWorldAdapter implements WorldAdapter {
 
     @Override
     public String getWorldId() {
-        // Dimension is ResourceKey<Level>; use toString() for stable world id (e.g. "minecraft:overworld")
+        // Dimension ResourceKey toString() for world id; client compares with same
         return level.dimension().toString();
     }
 
@@ -40,6 +40,7 @@ public class FabricWorldAdapter implements WorldAdapter {
         return getEntitiesInAabb(box);
     }
 
+    /** Uses AABB from getEntitiesInBox; no full-world scan. */
     @Override
     public List<EntityAdapter> getEntitiesInRadius(Location origin, double radius) {
         return getEntitiesInBox(origin, radius);

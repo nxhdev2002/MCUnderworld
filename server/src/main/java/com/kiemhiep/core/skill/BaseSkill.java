@@ -22,6 +22,9 @@ public abstract class BaseSkill implements ISkill {
         if (this instanceof ISingleTargetDamage s) s.applySingleTargetDamage(ctx);
         if (this instanceof ISummon s) s.applySummon(ctx);
         if (this instanceof IShield s) s.applyShield(ctx);
+        if (this instanceof ITornado t) t.applyTornado(ctx);
+        if (this instanceof ITsunami t) t.applyTsunami(ctx);
+        if (this instanceof IMeteor m) m.applyMeteor(ctx);
     }
 
     /**

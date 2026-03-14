@@ -21,11 +21,24 @@ public record SkillDefinition(
     int castTimeTicks,
     boolean castCancellable,
     boolean consumable,
+    String elementalType,
     String parentSkillId,
     int evolutionLevel,
+    int level,
     Instant createdAt,
     Instant updatedAt
 ) {
     public static final double DEFAULT_MAX_RADIUS = 8.0;
     public static final int DEFAULT_COOLDOWN_TICKS = 40;
+    public static final String DEFAULT_ELEMENTAL_TYPE = "NONE";
+    public static final int DEFAULT_LEVEL = 1;
+
+    public SkillDefinition {
+        if (elementalType == null || elementalType.isEmpty()) {
+            elementalType = DEFAULT_ELEMENTAL_TYPE;
+        }
+        if (level <= 0) {
+            level = DEFAULT_LEVEL;
+        }
+    }
 }

@@ -24,6 +24,7 @@ dependencies {
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	implementation project(':common')
 
 	implementation "com.zaxxer:HikariCP:5.1.0"
 	implementation "org.flywaydb:flyway-core:10.22.0"
@@ -74,6 +75,8 @@ java {
 }
 
 jar {
+	dependsOn ':common:classes'
+	from(project(':common').file("build/classes/java/main"))
 	from(rootProject.file("LICENSE")) {
 		rename { "${it}_${project.base.archivesName.get()}" }
 	}

@@ -4,6 +4,7 @@ import com.kiemhiep.api.model.SkillDefinition;
 import com.kiemhiep.api.platform.EntityAdapter;
 import com.kiemhiep.api.platform.Location;
 import com.kiemhiep.api.platform.PlayerAdapter;
+import com.kiemhiep.api.skill.IEffectRunner;
 import com.kiemhiep.api.skill.SkillContext;
 
 import java.util.List;
@@ -15,7 +16,8 @@ public record SkillContextImpl(
     SkillDefinition definition,
     Location origin,
     List<EntityAdapter> targetsInRadius,
-    long serverTick
+    long serverTick,
+    IEffectRunner effectRunner
 ) implements SkillContext {
 
     @Override
@@ -46,5 +48,10 @@ public record SkillContextImpl(
     @Override
     public long getServerTick() {
         return serverTick;
+    }
+
+    @Override
+    public IEffectRunner getEffectRunner() {
+        return effectRunner;
     }
 }
