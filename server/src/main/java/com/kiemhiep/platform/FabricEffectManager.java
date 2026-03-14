@@ -55,7 +55,7 @@ public class FabricEffectManager extends EffectManager {
                 for (ServerPlayer recipient : playersInRange) {
                     ServerPlayNetworking.send(recipient, payload);
                 }
-                Kiemhiep.LOGGER.info("[Skill] effect sent S2C: skillId={} effectType={} at ({}, {}, {}) recipients={}", skillId, effectType, location.x(), location.y(), location.z(), playersInRange.size());
+                Kiemhiep.LOGGER.debug("[Skill] effect sent S2C: skillId={} effectType={} at ({}, {}, {}) recipients={}", skillId, effectType, location.x(), location.y(), location.z(), playersInRange.size());
             } else {
                 Kiemhiep.LOGGER.warn("Skill effect not sent: caster adapter is not FabricPlayerAdapter");
             }

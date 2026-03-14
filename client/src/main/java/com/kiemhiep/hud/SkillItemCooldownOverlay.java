@@ -38,12 +38,19 @@ public final class SkillItemCooldownOverlay {
         HudRenderCallback.EVENT.register(SkillItemCooldownOverlay::render);
     }
 
+    /** Throttle: tick cooldowns every N frames instead of every frame (HUD runs at 60–144+ FPS). */
+    private static final int TICK_EVERY_N_FRAMES = 20;
+    private static int frameCounter;
+
     private static void render(GuiGraphics graphics, DeltaTracker deltaTracker) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) return;
 
-        // Tick cooldowns to remove expired ones
-        ClientSkillCooldowns.tick();
+        // Tick cooldowns only every N frames to avoid per-frame work in HUD
+        if (++frameCounter >= TICK_EVERY_N_FRAMES) {
+            frameCounter = 0;
+            ClientSkillCooldowns.tick();
+        }
 
         // Render on hotbar (always visible)
         renderHotbarCooldowns(graphics, mc);

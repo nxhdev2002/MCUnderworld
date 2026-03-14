@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Renders skill item tooltips with full skill information.
  * Shows: skill type, mana cost, cooldown, range, effects, and type (AoE/Melee).
- * Injected via ItemTooltipMixin.
+ * Called from ItemTooltipCallback (ClientTooltipInitializer).
  */
 public final class SkillItemTooltip {
 
@@ -22,7 +22,7 @@ public final class SkillItemTooltip {
     private SkillItemTooltip() {}
 
     /**
-     * Get tooltip lines for a skill item. Called from ItemTooltipMixin.
+     * Get tooltip lines for a skill item. Called from ItemTooltipCallback (ClientTooltipInitializer).
      */
     public static void addTooltip(ItemStack stack, @SuppressWarnings("unused") TooltipFlag tooltipFlag, List<Component> lines) {
         // Check if this is a skill item

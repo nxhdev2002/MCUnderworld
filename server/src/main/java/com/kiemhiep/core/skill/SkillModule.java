@@ -257,9 +257,9 @@ public class SkillModule implements KiemHiepModule {
             String itemId = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
             if (!(world instanceof ServerLevel serverLevel)) return InteractionResult.PASS;
             long serverTick = serverLevel.getServer().getTickCount();
-            Kiemhiep.LOGGER.info("[Skill] item used: player={} itemId={} hand={}", player.getName().getString(), itemId, hand);
+            Kiemhiep.LOGGER.debug("[Skill] item used: player={} itemId={} hand={}", player.getName().getString(), itemId, hand);
             SkillManager.UseResult result = skillServiceOpt.get().useSkill(player.getUUID(), itemId, serverTick);
-            Kiemhiep.LOGGER.info("[Skill] useSkill result: itemId={} result={}", itemId, result);
+            Kiemhiep.LOGGER.debug("[Skill] useSkill result: itemId={} result={}", itemId, result);
             if (result == SkillManager.UseResult.SUCCESS) {
                 skillServiceOpt.get().getByItemId(itemId).ifPresent(def -> {
                     if (def.consumable()) stack.shrink(1);

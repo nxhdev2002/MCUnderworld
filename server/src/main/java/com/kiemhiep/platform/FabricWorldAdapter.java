@@ -40,6 +40,7 @@ public class FabricWorldAdapter implements WorldAdapter {
         return getEntitiesInAabb(box);
     }
 
+    /** Uses AABB from getEntitiesInBox; no full-world scan. */
     @Override
     public List<EntityAdapter> getEntitiesInRadius(Location origin, double radius) {
         return getEntitiesInBox(origin, radius);

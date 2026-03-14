@@ -36,6 +36,10 @@ run/
 
 hs_err_*.log
 
+# cursor / claude local config (do not commit)
+
+.claude/settings.local.json
+
 # runtime logs
 
 logs/
