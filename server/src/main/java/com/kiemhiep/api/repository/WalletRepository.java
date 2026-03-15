@@ -16,4 +16,16 @@ public interface WalletRepository {
     Wallet save(Wallet wallet);
 
     void deleteById(long id);
+
+    /**
+     * Atomically transfer amount from one wallet to another.
+     * Both updates happen in a single JDBC transaction.
+     *
+     * @param fromId      sender wallet ID
+     * @param toId        receiver wallet ID
+     * @param amount      amount to transfer
+     * @param currency    currency type
+     * @return true if transfer succeeded, false if insufficient balance
+     */
+    boolean transferAtomic(long fromId, long toId, long amount, String currency);
 }
