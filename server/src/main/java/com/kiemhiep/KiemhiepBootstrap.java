@@ -137,7 +137,7 @@ public final class KiemhiepBootstrap {
             TransactionRepository transactionRepo = new JdbcTransactionRepository(ds);
             walletRepo = new CachedWalletRepository(walletRepo, distributedCache, messageBus);
             EconomyService economyService = new EconomyServiceImpl(walletRepo, transactionRepo, eventDispatcher);
-            registry.register(new EconomyModule());
+            registry.register(new EconomyModule(economyService));
         }
 
         loader.loadAll();

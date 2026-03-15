@@ -1,5 +1,6 @@
 package com.kiemhiep.economy;
 
+import com.kiemhiep.api.model.Wallet;
 import com.kiemhiep.api.module.ModuleRegistry;
 import com.kiemhiep.api.service.EconomyService;
 import com.kiemhiep.cultivation.CultivationModule;
@@ -28,14 +29,16 @@ public final class EconomyListener {
     }
 
     private static void ensureDefaultWallets(java.util.UUID playerUuid) {
-        Optional<EconomyService> economyServiceOpt = EconomyModule.getEconomyService();
-        if (economyServiceOpt.isEmpty()) return;
+        EconomyService economyService = EconomyModule.getInstance()
+            .map(EconomyModule::getService).orElse(null);
+        if (economyService == null) return;
 
-        EconomyService economyService = economyServiceOpt.get();
+        long playerId = getPlayerId(playerUuid);
+        if (playerId == 0L) return;
 
-        // Create default wallets for new players (lazy - created on first access)
+        // Initialize wallets for default currencies (creates if not exists)
         for (String currency : economyService.getDefaultCurrencies()) {
-            economyService.getBalance(getPlayerId(playerUuid), currency);
+            economyService.getBalance(playerId, currency);
         }
     }
 

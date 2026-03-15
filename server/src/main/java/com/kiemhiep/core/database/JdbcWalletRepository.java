@@ -116,6 +116,57 @@ public class JdbcWalletRepository implements WalletRepository {
         }
     }
 
+    @Override
+    public boolean transferAtomic(long fromId, long toId, long amount, String currency) {
+        String updateFromSql = "UPDATE kiemhiep_wallets SET balance = balance - ?, updated_at = ? WHERE id = ? AND balance >= ?";
+        String updateToSql = "UPDATE kiemhiep_wallets SET balance = balance + ?, updated_at = ? WHERE id = ?";
+        String insertTransactionSql = "INSERT INTO kiemhiep_transactions (from_player_id, to_player_id, amount, currency_type, type, created_at) VALUES (?, ?, ?, ?, ?, ?)";
+
+        try (Connection c = dataSource.getConnection()) {
+            c.setAutoCommit(false);
+            try {
+                // Check and deduct from sender
+                try (PreparedStatement ps = c.prepareStatement(updateFromSql)) {
+                    ps.setLong(1, amount);
+                    ps.setTimestamp(2, Timestamp.from(Instant.now()));
+                    ps.setLong(3, fromId);
+                    ps.setLong(4, amount);
+                    if (ps.executeUpdate() == 0) {
+                        // Insufficient balance
+                        return false;
+                    }
+                }
+
+                // Add to receiver
+                try (PreparedStatement ps = c.prepareStatement(updateToSql)) {
+                    ps.setLong(1, amount);
+                    ps.setTimestamp(2, Timestamp.from(Instant.now()));
+                    ps.setLong(3, toId);
+                    ps.executeUpdate();
+                }
+
+                // Record transaction
+                try (PreparedStatement ps = c.prepareStatement(insertTransactionSql, Statement.RETURN_GENERATED_KEYS)) {
+                    ps.setNull(1, Types.BIGINT); // from_player_id is optional for record
+                    ps.setLong(2, toId);
+                    ps.setLong(3, amount);
+                    ps.setString(4, currency);
+                    ps.setString(5, "TRANSFER");
+                    ps.setTimestamp(6, Timestamp.from(Instant.now()));
+                    ps.executeUpdate();
+                }
+
+                c.commit();
+                return true;
+            } catch (Exception e) {
+                c.rollback();
+                throw e;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to perform atomic transfer", e);
+        }
+    }
+
     private static Wallet mapRow(ResultSet rs) throws SQLException {
         return new Wallet(
             rs.getLong("id"),

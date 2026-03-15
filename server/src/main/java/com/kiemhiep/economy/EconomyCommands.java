@@ -64,18 +64,18 @@ public final class EconomyCommands {
             source.sendFailure(Component.literal("No player specified and source is not a player."));
             return 0;
         }
-        Optional<Player> optPlayer = getPlayer(player.getUUID().toString());
+        Optional<Player> optPlayer = lookupPlayerByUuid(player.getUUID().toString());
         if (optPlayer.isEmpty()) {
             source.sendFailure(Component.literal("Player not found in database."));
             return 0;
         }
         long playerId = optPlayer.get().id();
-        Optional<EconomyService> economyServiceOpt = EconomyModule.getEconomyService();
-        if (economyServiceOpt.isEmpty()) {
+        EconomyService economyService = EconomyModule.getInstance()
+            .map(EconomyModule::getService).orElse(null);
+        if (economyService == null) {
             source.sendFailure(Component.literal("Economy module is disabled."));
             return 0;
         }
-        EconomyService economyService = economyServiceOpt.get();
         source.sendSuccess(() -> Component.literal("Wallets for %s:".formatted(player.getName().getString())), false);
         for (String currency : economyService.getDefaultCurrencies()) {
             long balance = economyService.getBalance(playerId, currency);
@@ -90,8 +90,8 @@ public final class EconomyCommands {
             source.sendFailure(Component.literal("Only players can use this command."));
             return 0;
         }
-        Optional<Player> optFrom = getPlayer(player.getUUID().toString());
-        Optional<Player> optTo = getPlayer(target.getUUID().toString());
+        Optional<Player> optFrom = lookupPlayerByUuid(player.getUUID().toString());
+        Optional<Player> optTo = lookupPlayerByUuid(target.getUUID().toString());
         if (optFrom.isEmpty()) {
             source.sendFailure(Component.literal("Sender player not found in database."));
             return 0;
@@ -100,12 +100,12 @@ public final class EconomyCommands {
             source.sendFailure(Component.literal("Target player not found in database."));
             return 0;
         }
-        Optional<EconomyService> economyServiceOpt = EconomyModule.getEconomyService();
-        if (economyServiceOpt.isEmpty()) {
+        EconomyService economyService = EconomyModule.getInstance()
+            .map(EconomyModule::getService).orElse(null);
+        if (economyService == null) {
             source.sendFailure(Component.literal("Economy module is disabled."));
             return 0;
         }
-        EconomyService economyService = economyServiceOpt.get();
         boolean success = economyService.transfer(optFrom.get().id(), optTo.get().id(), currency, amount);
         if (success) {
             source.sendSuccess(() -> Component.literal("Paid %d %s to %s.".formatted(amount, currency, target.getName().getString())), true);
@@ -119,34 +119,34 @@ public final class EconomyCommands {
     }
 
     private static int executeAdd(CommandSourceStack source, ServerPlayer target, long amount, String currency) {
-        Optional<Player> optPlayer = getPlayer(target.getUUID().toString());
+        Optional<Player> optPlayer = lookupPlayerByUuid(target.getUUID().toString());
         if (optPlayer.isEmpty()) {
             source.sendFailure(Component.literal("Player not found in database."));
             return 0;
         }
-        Optional<EconomyService> economyServiceOpt = EconomyModule.getEconomyService();
-        if (economyServiceOpt.isEmpty()) {
+        EconomyService economyService = EconomyModule.getInstance()
+            .map(EconomyModule::getService).orElse(null);
+        if (economyService == null) {
             source.sendFailure(Component.literal("Economy module is disabled."));
             return 0;
         }
-        EconomyService economyService = economyServiceOpt.get();
         economyService.add(optPlayer.get().id(), currency, amount);
         source.sendSuccess(() -> Component.literal("Added %d %s to %s.".formatted(amount, currency, target.getName().getString())), true);
         return 1;
     }
 
     private static int executeRemove(CommandSourceStack source, ServerPlayer target, long amount, String currency) {
-        Optional<Player> optPlayer = getPlayer(target.getUUID().toString());
+        Optional<Player> optPlayer = lookupPlayerByUuid(target.getUUID().toString());
         if (optPlayer.isEmpty()) {
             source.sendFailure(Component.literal("Player not found in database."));
             return 0;
         }
-        Optional<EconomyService> economyServiceOpt = EconomyModule.getEconomyService();
-        if (economyServiceOpt.isEmpty()) {
+        EconomyService economyService = EconomyModule.getInstance()
+            .map(EconomyModule::getService).orElse(null);
+        if (economyService == null) {
             source.sendFailure(Component.literal("Economy module is disabled."));
             return 0;
         }
-        EconomyService economyService = economyServiceOpt.get();
         try {
             economyService.subtract(optPlayer.get().id(), currency, amount);
             source.sendSuccess(() -> Component.literal("Removed %d %s from %s.".formatted(amount, currency, target.getName().getString())), true);
@@ -157,11 +157,7 @@ public final class EconomyCommands {
         }
     }
 
-    private static Optional<Player> getPlayer(String uuid) {
-        Optional<EconomyService> economyServiceOpt = EconomyModule.getEconomyService();
-        if (economyServiceOpt.isEmpty()) {
-            return Optional.empty();
-        }
+    private static Optional<Player> lookupPlayerByUuid(String uuid) {
         // Get cultivation module to access PlayerService
         com.kiemhiep.api.module.ModuleRegistry registry = com.kiemhiep.KiemhiepBootstrap.getRegistry();
         Optional<com.kiemhiep.api.module.KiemHiepModule> cultivationOpt = registry.get("cultivation");

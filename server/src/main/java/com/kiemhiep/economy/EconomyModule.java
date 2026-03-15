@@ -13,6 +13,7 @@ import com.kiemhiep.core.service.EconomyServiceImpl;
 import javax.sql.DataSource;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Economy module: multi-currency system with signed balance (no 64 stack limit).
@@ -20,9 +21,16 @@ import java.util.Optional;
  */
 public class EconomyModule implements KiemHiepModule {
 
-    private static volatile EconomyService economyServiceHolder;
+    private static final AtomicReference<EconomyModule> INSTANCE = new AtomicReference<>();
+
+    private final EconomyService economyService;
 
     private boolean enabled;
+
+    public EconomyModule(EconomyService economyService) {
+        this.economyService = economyService;
+        INSTANCE.set(this);
+    }
 
     @Override
     public String getId() {
@@ -41,26 +49,12 @@ public class EconomyModule implements KiemHiepModule {
 
     @Override
     public void onLoad(ModuleContext ctx) {
-        Optional<DataSource> dsOpt = com.kiemhiep.KiemhiepBootstrap.getDataSource();
-        if (dsOpt.isEmpty()) {
-            com.kiemhiep.Kiemhiep.LOGGER.warn("Economy module: no DataSource, economy features disabled.");
-            return;
-        }
-        DataSource ds = dsOpt.get();
-
-        // Create repositories
-        WalletRepository walletRepository = new JdbcWalletRepository(ds);
-        TransactionRepository transactionRepository = new JdbcTransactionRepository(ds);
-
-        // Create service
-        EconomyServiceImpl economyServiceImpl = new EconomyServiceImpl(walletRepository, transactionRepository, ctx.getEventDispatcher());
-        economyServiceHolder = economyServiceImpl;
+        // Service already injected via constructor - nothing to do here
     }
 
     @Override
     public void onEnable(ModuleContext ctx) {
         enabled = true;
-        if (economyServiceHolder == null) return;
 
         // Register commands and listeners
         EconomyCommands.register();
@@ -70,7 +64,7 @@ public class EconomyModule implements KiemHiepModule {
     @Override
     public void onDisable() {
         enabled = false;
-        economyServiceHolder = null;
+        INSTANCE.set(null);
     }
 
     @Override
@@ -83,7 +77,11 @@ public class EconomyModule implements KiemHiepModule {
         this.enabled = enabled;
     }
 
-    public static Optional<EconomyService> getEconomyService() {
-        return Optional.ofNullable(economyServiceHolder);
+    public EconomyService getService() {
+        return economyService;
+    }
+
+    public static Optional<EconomyModule> getInstance() {
+        return Optional.ofNullable(INSTANCE.get());
     }
 }

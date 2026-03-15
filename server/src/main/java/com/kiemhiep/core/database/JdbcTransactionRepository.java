@@ -133,12 +133,16 @@ public class JdbcTransactionRepository implements TransactionRepository {
     }
 
     private static Transaction mapRow(ResultSet rs) throws SQLException {
-        Long fromPlayerId = rs.getLong("from_player_id");
-        Long toPlayerId = rs.getLong("to_player_id");
+        long rawFrom = rs.getLong("from_player_id");
+        Long fromPlayerId = rs.wasNull() ? null : rawFrom;
+
+        long rawTo = rs.getLong("to_player_id");
+        Long toPlayerId = rs.wasNull() ? null : rawTo;
+
         return new Transaction(
             rs.getLong("id"),
-            rs.wasNull() ? null : fromPlayerId,
-            rs.wasNull() ? null : toPlayerId,
+            fromPlayerId,
+            toPlayerId,
             rs.getLong("amount"),
             rs.getString("currency_type"),
             rs.getString("type"),

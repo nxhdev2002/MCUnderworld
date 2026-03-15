@@ -4,6 +4,7 @@ import com.kiemhiep.api.event.EventDispatcher;
 import com.kiemhiep.api.event.TransactionEvent;
 import com.kiemhiep.api.event.WalletUpdateEvent;
 import com.kiemhiep.api.model.Transaction;
+import com.kiemhiep.api.model.CurrencyType;
 import com.kiemhiep.api.model.Wallet;
 import com.kiemhiep.api.repository.TransactionRepository;
 import com.kiemhiep.api.repository.WalletRepository;
@@ -30,6 +31,14 @@ public class EconomyServiceImpl implements EconomyService {
         this.eventDispatcher = eventDispatcher;
     }
 
+    private void validateCurrency(String currency) {
+        try {
+            CurrencyType.byName(currency.toLowerCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid currency: " + currency);
+        }
+    }
+
     @Override
     public long getBalance(long playerId, String currency) {
         Optional<Wallet> wallet = walletRepository.getByPlayerIdAndCurrency(playerId, currency);
@@ -43,6 +52,7 @@ public class EconomyServiceImpl implements EconomyService {
 
     @Override
     public void add(long playerId, String currency, long amount) {
+        validateCurrency(currency);
         if (amount <= 0) {
             throw new IllegalArgumentException("Amount must be positive");
         }
@@ -62,6 +72,7 @@ public class EconomyServiceImpl implements EconomyService {
 
     @Override
     public void subtract(long playerId, String currency, long amount) {
+        validateCurrency(currency);
         if (amount <= 0) {
             throw new IllegalArgumentException("Amount must be positive");
         }
@@ -84,40 +95,15 @@ public class EconomyServiceImpl implements EconomyService {
 
     @Override
     public boolean transfer(long fromPlayerId, long toPlayerId, String currency, long amount) {
+        validateCurrency(currency);
         if (amount <= 0) {
             throw new IllegalArgumentException("Amount must be positive");
         }
         if (fromPlayerId == toPlayerId) {
             return false;
         }
-
-        Wallet fromWallet = walletRepository.getByPlayerIdAndCurrency(fromPlayerId, currency).orElse(null);
-        if (fromWallet == null || fromWallet.balance() < amount) {
-            return false;
-        }
-
-        Wallet toWallet = getOrCreateWallet(toPlayerId, currency);
-
-        long fromNewBalance = fromWallet.balance() - amount;
-        long toNewBalance = toWallet.balance() + amount;
-
-        Wallet updatedFrom = new Wallet(fromWallet.id(), fromPlayerId, fromNewBalance, currency, fromWallet.createdAt(), Instant.now());
-        Wallet updatedTo = new Wallet(toWallet.id(), toPlayerId, toNewBalance, currency, toWallet.createdAt(), Instant.now());
-
-        // Save both wallets (atomic within single DB connection if supported)
-        walletRepository.save(updatedFrom);
-        walletRepository.save(updatedTo);
-
-        // Create transaction records
-        Transaction transaction = Transaction.createTransfer(fromPlayerId, toPlayerId, amount, currency);
-        transactionRepository.save(transaction);
-
-        // Fire events
-        eventDispatcher.fire(new TransactionEvent(transaction.id(), fromPlayerId, toPlayerId, amount, currency, Instant.now()));
-        eventDispatcher.fire(new WalletUpdateEvent(fromPlayerId, currency, fromWallet.balance(), fromNewBalance, WalletUpdateEvent.REASON_TRANSFER_OUT));
-        eventDispatcher.fire(new WalletUpdateEvent(toPlayerId, currency, toWallet.balance(), toNewBalance, WalletUpdateEvent.REASON_TRANSFER_IN));
-
-        return true;
+        // Use transferAtomic for atomic DB update
+        return walletRepository.transferAtomic(fromPlayerId, toPlayerId, amount, currency);
     }
 
     @Override
@@ -127,7 +113,7 @@ public class EconomyServiceImpl implements EconomyService {
 
     @Override
     public String getDefaultCurrency(long playerId) {
-        return "SPIRIT_STONE";
+        return CurrencyType.SPIRIT_STONE.getName();
     }
 
     // Helper to get or create wallet

@@ -97,14 +97,17 @@ public class CachedWalletRepository implements WalletRepository {
     public Wallet save(Wallet wallet) {
         Wallet saved = delegate.save(wallet);
         String byIdKey = CacheKeys.walletById(saved.id());
-        String byPlayerKey = CacheKeys.walletsByPlayer(saved.playerId());
         String byPlayerCurrencyKey = CacheKeys.walletByPlayerAndCurrency(saved.playerId(), saved.currency());
         cache.set(byIdKey, toJson(saved), CACHE_TTL_SECONDS);
-        cache.set(byPlayerKey, toJsonList(delegate.getByPlayerId(saved.playerId())), CACHE_TTL_SECONDS);
         cache.set(byPlayerCurrencyKey, toJson(saved), CACHE_TTL_SECONDS);
         messageBus.publishInvalidate("wallet", String.valueOf(saved.playerId()));
         messageBus.publishInvalidate("wallet", "id:" + saved.id());
         return saved;
+    }
+
+    @Override
+    public boolean transferAtomic(long fromId, long toId, long amount, String currency) {
+        return delegate.transferAtomic(fromId, toId, amount, currency);
     }
 
     @Override
@@ -137,7 +140,7 @@ public class CachedWalletRepository implements WalletRepository {
 
     private static List<Wallet> fromJsonList(String json) {
         try {
-            return GSON.fromJson(json, java.util.List.class);
+            return GSON.fromJson(json, new com.google.gson.reflect.TypeToken<List<Wallet>>() {}.getType());
         } catch (Exception e) {
             return null;
         }
