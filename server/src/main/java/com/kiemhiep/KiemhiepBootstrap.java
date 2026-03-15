@@ -27,6 +27,14 @@ import com.kiemhiep.core.repository.CachedPlayerRepository;
 import com.kiemhiep.core.player.PlayerServiceImpl;
 import com.kiemhiep.cultivation.CultivationModule;
 import com.kiemhiep.cultivation.CultivationServiceImpl;
+import com.kiemhiep.economy.EconomyModule;
+import com.kiemhiep.api.repository.TransactionRepository;
+import com.kiemhiep.api.repository.WalletRepository;
+import com.kiemhiep.api.service.EconomyService;
+import com.kiemhiep.core.database.JdbcTransactionRepository;
+import com.kiemhiep.core.database.JdbcWalletRepository;
+import com.kiemhiep.core.repository.CachedWalletRepository;
+import com.kiemhiep.core.service.EconomyServiceImpl;
 import com.kiemhiep.core.event.EventDispatcherImpl;
 import com.kiemhiep.core.monitor.ServerMetricsRecorder;
 import com.kiemhiep.core.sync.NoOpMessageBus;
@@ -123,6 +131,13 @@ public final class KiemhiepBootstrap {
             PlayerService playerService = new PlayerServiceImpl(playerRepo);
             CultivationService cultivationService = new CultivationServiceImpl(cultivationRepo, eventDispatcher);
             registry.register(new CultivationModule(cultivationService, playerService));
+
+            // Economy module setup
+            WalletRepository walletRepo = new JdbcWalletRepository(ds);
+            TransactionRepository transactionRepo = new JdbcTransactionRepository(ds);
+            walletRepo = new CachedWalletRepository(walletRepo, distributedCache, messageBus);
+            EconomyService economyService = new EconomyServiceImpl(walletRepo, transactionRepo, eventDispatcher);
+            registry.register(new EconomyModule());
         }
 
         loader.loadAll();

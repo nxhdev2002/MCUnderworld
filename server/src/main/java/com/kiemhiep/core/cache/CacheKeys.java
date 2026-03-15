@@ -27,5 +27,18 @@ public final class CacheKeys {
         return key("cultivation", "id:" + id);
     }
 
+    // Wallet / Economy cache keys
+    public static String walletById(long id) {
+        return key("wallet", "id:" + id);
+    }
+
+    public static String walletByPlayerAndCurrency(long playerId, String currency) {
+        return key("wallet", playerId + ":" + currency);
+    }
+
+    public static String walletsByPlayer(long playerId) {
+        return key("wallets", String.valueOf(playerId));
+    }
+
     private CacheKeys() {}
 }
