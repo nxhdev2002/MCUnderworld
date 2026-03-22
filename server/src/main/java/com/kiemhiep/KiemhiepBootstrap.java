@@ -31,10 +31,16 @@ import com.kiemhiep.economy.EconomyModule;
 import com.kiemhiep.api.repository.TransactionRepository;
 import com.kiemhiep.api.repository.WalletRepository;
 import com.kiemhiep.api.service.EconomyService;
+import com.kiemhiep.api.service.SectService;
+import com.kiemhiep.api.service.PlayerService;
+import com.kiemhiep.sect.SectModule;
+import com.kiemhiep.core.database.JdbcSectRepository;
 import com.kiemhiep.core.database.JdbcTransactionRepository;
 import com.kiemhiep.core.database.JdbcWalletRepository;
+import com.kiemhiep.core.repository.CachedSectRepository;
 import com.kiemhiep.core.repository.CachedWalletRepository;
 import com.kiemhiep.core.service.EconomyServiceImpl;
+import com.kiemhiep.core.service.SectServiceImpl;
 import com.kiemhiep.core.event.EventDispatcherImpl;
 import com.kiemhiep.core.monitor.ServerMetricsRecorder;
 import com.kiemhiep.core.sync.NoOpMessageBus;
@@ -138,6 +144,12 @@ public final class KiemhiepBootstrap {
             walletRepo = new CachedWalletRepository(walletRepo, distributedCache, messageBus);
             EconomyService economyService = new EconomyServiceImpl(walletRepo, transactionRepo, eventDispatcher);
             registry.register(new EconomyModule(economyService));
+
+            // Sect module setup
+            JdbcSectRepository jdbcSectRepo = new JdbcSectRepository(ds);
+            CachedSectRepository cachedSectRepo = new CachedSectRepository(jdbcSectRepo, distributedCache, messageBus);
+            SectService sectService = new SectServiceImpl(cachedSectRepo, playerService, eventDispatcher);
+            registry.register(new SectModule(sectService, playerService));
         }
 
         loader.loadAll();

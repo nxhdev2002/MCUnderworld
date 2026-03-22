@@ -40,5 +40,22 @@ public final class CacheKeys {
         return key("wallets", String.valueOf(playerId));
     }
 
+    // Sect cache keys
+    public static String sectById(long sectId) {
+        return key("sect", "id:" + sectId);
+    }
+
+    public static String sectsByPlayer(long playerId) {
+        return key("sects", String.valueOf(playerId));
+    }
+
+    public static String sectMembers(long sectId) {
+        return key("sect-members", String.valueOf(sectId));
+    }
+
+    public static String sectRelations(long sectId) {
+        return key("sect-relations", String.valueOf(sectId));
+    }
+
     private CacheKeys() {}
 }
